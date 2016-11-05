@@ -3,6 +3,7 @@ package com.winthier.worlds;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -80,6 +81,22 @@ public class WorldsCommand implements CommandExecutor {
                 } else {
                     Msg.send(sender, " &a%s&r &7(&rloaded&7)", myWorld.getName());
                 }
+            }
+        } else if (cmd.equals("setspawn")) {
+            World world = player.getWorld();
+            Location loc = player.getLocation();
+            MyWorld myWorld = plugin.worldByName(world.getName());
+            if (myWorld == null) {
+                int x = loc.getBlockX();
+                int y = loc.getBlockY();
+                int z = loc.getBlockZ();
+                world.setSpawnLocation(x, y, z);
+                Msg.info(sender, "World spawn set to %d,%d,%d.", x, y, z);
+            } else {
+                myWorld.setSpawnLocation(loc);
+                myWorld.save();
+                plugin.saveConfig();
+                Msg.info(sender, "World spawn set to %.02f,%.02f,%.02f.", loc.getX(), loc.getY(), loc.getZ());
             }
         } else {
             return false;

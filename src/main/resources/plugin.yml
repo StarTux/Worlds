@@ -6,6 +6,7 @@ main: com.winthier.worlds.WorldsPlugin
 depend: []
 commands:
   worlds:
+    aliases: [ world ]
     description: Admin interface
     permission: worlds.worlds
   wtp:
