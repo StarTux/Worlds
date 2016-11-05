@@ -1,0 +1,89 @@
+package com.winthier.worlds;
+
+import java.util.List;
+import lombok.RequiredArgsConstructor;
+import org.bukkit.ChatColor;
+import org.bukkit.World;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+
+@RequiredArgsConstructor
+public class WorldsCommand implements CommandExecutor {
+    final WorldsPlugin plugin;
+
+    @Override
+    public boolean onCommand(CommandSender sender, Command command, String alias, String[] args) {
+        final Player player = sender instanceof Player ? (Player)sender : null;
+        String cmd = args.length > 0 ? args[0].toLowerCase() : null;
+        if (cmd == null) {
+            return false;
+        } else if (cmd.equals("who")) {
+            Msg.info(sender, "World Player List");
+            for (World world: plugin.getServer().getWorlds()) {
+                List<Player> players = world.getPlayers();
+                if (players.isEmpty()) continue;
+                StringBuilder sb = new StringBuilder(Msg.format("&7%s &8(&r%d&8)&r", world.getName(), players.size()));
+                for (Player p: players) {
+                    sb.append(" ").append(p.getName());
+                }
+                sender.sendMessage(sb.toString());
+            }
+        } else if (cmd.equals("listloaded")) {
+            int count = 0;
+            for (World world: plugin.getServer().getWorlds()) {
+                if (plugin.worldByName(world.getName()) == null) {
+                    sender.sendMessage(ChatColor.RED + world.getName() + ChatColor.RESET + " (unregistered)");
+                } else {
+                    sender.sendMessage(ChatColor.GREEN + world.getName() + ChatColor.RESET + " (registered)");
+                }
+                count += 1;
+            }
+            sender.sendMessage("" + count + " worlds are currently loaded.");
+        } else if (cmd.equals("reload")) {
+            plugin.reloadConfig();
+            plugin.reloadWorlds();
+            plugin.loadAllWorlds();
+            Msg.info(sender, "Worlds reloaded");
+        } else if (cmd.equals("import")) {
+            if (args.length != 2) return false;
+            String name = args[1];
+            if (name.equals("*")) {
+                int count = 0;
+                for (World world: plugin.getServer().getWorlds()) {
+                    MyWorld myWorld = new MyWorld(plugin, world.getName());
+                    myWorld.configure(world);
+                    myWorld.save();
+                    count += 1;
+                }
+                plugin.saveConfig();
+                Msg.info(sender, "Imported %d worlds.", count);
+            } else {
+                World world = plugin.getServer().getWorld(name);
+                if (world == null) {
+                    Msg.warn(sender, "World not found: %s", name);
+                    return true;
+                }
+                name = world.getName();
+                MyWorld myWorld = new MyWorld(plugin, name);
+                myWorld.configure(world);
+                myWorld.save();
+                plugin.saveConfig();
+                Msg.info(sender, "Imported world '%s'", name);
+            }
+        } else if (cmd.equals("list")) {
+            Msg.info(sender, "%d Worlds", plugin.getWorlds().size());
+            for (MyWorld myWorld: plugin.getWorlds()) {
+                if (myWorld.getWorld() == null) {
+                    Msg.send(sender, " &c%s&r &7(&rnot loaded&7)", myWorld.getName());
+                } else {
+                    Msg.send(sender, " &a%s&r &7(&rloaded&7)", myWorld.getName());
+                }
+            }
+        } else {
+            return false;
+        }
+        return true;
+    }
+}

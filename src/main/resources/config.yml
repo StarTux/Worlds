@@ -1,0 +1,39 @@
+worlds:
+  Example:
+    AutoLoad: false
+    Type: NORMAL # AMPLIFIED, CUSTOMIZED, FLAT, LARGE_BIOMES, NORMAL, VERSION_1_1
+    Environment: NORMAL # NETHER, NORMAL, THE_END
+    GenerateStructures: true
+    Generator: VoidGenerator
+    GeneratorSettings: ''
+    Seed: ''
+    GameRules:
+      doMobGriefing: false
+    Settings:
+      AutoSave: true
+      Difficulty: NORMAL # EASY, HARD, NORMAL, PEACEFUL
+      KeepSpawnInMemory: true
+      PvP: false
+      AllowSpawns:
+        Monster: true
+        Animal: true
+      SpawnLimits:
+        Amient: 15
+        Animal: 15
+        Monster: 70
+        WaterAnimal: 5
+      TicksPer:
+        AnimalSpawn: 400
+        MonsterSpawn: 1
+    SpawnLocation:
+      x: 0.0
+      y: 65.0
+      z: 0.0
+      pitch: 0.0
+      yaw: 0.0
+    Border:
+      Center: [ 0, 0 ]
+      Size: 10000
+      DamageBuffer: 0
+      WarningDistance: 0
+      WarningTime: 0
