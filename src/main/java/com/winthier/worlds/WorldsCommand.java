@@ -82,6 +82,15 @@ public class WorldsCommand implements CommandExecutor {
                     Msg.send(sender, " &a%s&r &7(&rloaded&7)", myWorld.getName());
                 }
             }
+        } else if (cmd.equals("spawn")) {
+            World world = player.getWorld();
+            MyWorld myWorld = plugin.worldByName(world.getName());
+            if (myWorld == null) {
+                player.teleport(world.getSpawnLocation());
+            } else {
+                player.teleport(myWorld.getSpawnLocation());
+            }
+            Msg.info(sender, "Teleported to world spawn.");
         } else if (cmd.equals("setspawn")) {
             World world = player.getWorld();
             Location loc = player.getLocation();
