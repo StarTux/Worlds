@@ -242,6 +242,7 @@ public class MyWorld {
 
         void save(ConfigurationSection config) {
             config.set("AutoSave", autoSave);
+            config.set("Difficulty", difficulty.name());
             config.set("KeepSpawnInMemory", keepSpawnInMemory);
             config.set("PvP", pvp);
             config.set("AllowSpawns.Monster", allowMonsters);
@@ -256,6 +257,7 @@ public class MyWorld {
 
         void configure(World world) {
             autoSave = world.isAutoSave();
+            difficulty = world.getDifficulty();
             keepSpawnInMemory = world.getKeepSpawnInMemory();
             pvp = world.getPVP();
             allowMonsters = world.getAllowMonsters();
