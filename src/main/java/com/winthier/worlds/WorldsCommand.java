@@ -107,6 +107,19 @@ public class WorldsCommand implements CommandExecutor {
                 plugin.saveConfig();
                 Msg.info(sender, "World spawn set to %.02f,%.02f,%.02f.", loc.getX(), loc.getY(), loc.getZ());
             }
+        } else if (cmd.equals("unload") && args.length == 2) {
+            String name = args[1];
+            World world = plugin.getServer().getWorld(name);
+            if (world == null) {
+                Msg.warn(sender, "World not found: %s", name);
+                return true;
+            }
+            boolean ret = plugin.getServer().unloadWorld(world, true);
+            if (ret) {
+                Msg.info(sender, "Unloaded world %s.", world.getName());
+            } else {
+                Msg.warn(sender, "Could not unload world %s.", world.getName());
+            }
         } else {
             return false;
         }

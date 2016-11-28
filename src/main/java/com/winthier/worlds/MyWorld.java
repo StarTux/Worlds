@@ -9,11 +9,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.bukkit.Difficulty;
 import org.bukkit.Location;
+import org.bukkit.PortalType;
+import org.bukkit.TravelAgent;
 import org.bukkit.World;
 import org.bukkit.WorldBorder;
 import org.bukkit.WorldCreator;
 import org.bukkit.WorldType;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.event.Cancellable;
 
 /**
  * This is a simple wrapper for a world section in the
@@ -34,8 +37,9 @@ public class MyWorld {
     Long seed;
     Map<String, String> gameRules = null;
     Settings settings = null;
-    SpawnLocation spawnLocation = null;
+    MyLocation spawnLocation = null;
     Border border = null;
+    Portal netherPortal, endPortal;
 
     void configure(ConfigurationSection config) {
         autoLoad = config.getBoolean("AutoLoad", false);
@@ -74,12 +78,74 @@ public class MyWorld {
         }
         section = config.getConfigurationSection("SpawnLocation");
         if (section != null) {
-            spawnLocation = SpawnLocation.of(section);
+            spawnLocation = MyLocation.of(section);
         }
         section = config.getConfigurationSection("Border");
         if (section != null) {
             border = new Border();
             border.configure(section);
+        }
+        section = config.getConfigurationSection("Portal");
+        if (section != null) {
+            ConfigurationSection portalSection;
+            portalSection = section.getConfigurationSection("Nether");
+            if (portalSection != null) {
+                netherPortal = new Portal();
+                netherPortal.configure(portalSection);
+            }
+            portalSection = section.getConfigurationSection("End");
+            if (portalSection != null) {
+                endPortal = new Portal();
+                endPortal.configure(portalSection);
+            }
+        }
+    }
+
+    /**
+     * This function only saves some of the settings. In general,
+     * it is intended for admins to edit the config.yml, then use
+     * reload to apply the changes.
+     */
+    void save() {
+        ConfigurationSection config = plugin.getConfig().getConfigurationSection("worlds").getConfigurationSection(name);
+        if (config == null) config = plugin.getConfig().getConfigurationSection("worlds").createSection(name);
+        config.set("AutoLoad", autoLoad);
+        config.set("WorldType", worldType.name());
+        config.set("Environment", environment.name());
+        config.set("Generator", generator);
+        config.set("GeneratorSettings", generatorSettings);
+        config.set("Seed", seed);
+        if (gameRules != null) {
+            ConfigurationSection section = config.getConfigurationSection("GameRules");
+            if (section == null) section = config.createSection("GameRules");
+            for (Map.Entry<String, String> entry: gameRules.entrySet()) {
+                section.set(entry.getKey(), entry.getValue());
+            }
+        }
+        if (settings != null) {
+            ConfigurationSection section = config.getConfigurationSection("Settings");
+            if (section == null) section = config.createSection("Settings");
+            settings.save(section);
+        }
+        if (spawnLocation != null) {
+            ConfigurationSection section = config.getConfigurationSection("SpawnLocation");
+            if (section == null) section = config.createSection("SpawnLocation");
+            spawnLocation.save(section);
+        }
+        if (border != null) {
+            ConfigurationSection section = config.getConfigurationSection("Border");
+            if (section == null) section = config.createSection("Border");
+            border.save(section);
+        }
+        if (netherPortal != null) {
+            ConfigurationSection section = config.getConfigurationSection("Portal.Nether");
+            if (section == null) section = config.createSection("Portal.Nether");
+            netherPortal.save(section);
+        }
+        if (endPortal != null) {
+            ConfigurationSection section = config.getConfigurationSection("Portal.End");
+            if (section == null) section = config.createSection("Portal.End");
+            endPortal.save(section);
         }
     }
 
@@ -94,7 +160,7 @@ public class MyWorld {
         }
         settings = new Settings();
         settings.configure(world);
-        spawnLocation = SpawnLocation.of(getSpawnLocation());
+        spawnLocation = MyLocation.of(getSpawnLocation());
         border = new Border();
         border.configure(world);
     }
@@ -137,8 +203,30 @@ public class MyWorld {
             }
         }
         if (settings != null) settings.apply(world);
-        if (spawnLocation != null) spawnLocation.apply(world);
+        if (spawnLocation != null) spawnLocation.setSpawn(world);
         if (border != null) border.apply(world);
+    }
+
+    Location applyPortalTravel(Cancellable event, TravelAgent travelAgent, Location from, PortalType portalType) {
+        if (portalType == PortalType.NETHER) {
+            if (netherPortal == null) return null;
+            if (netherPortal.cancel) {
+                event.setCancelled(true);
+                return null;
+            } else {
+                return netherPortal.apply(travelAgent, from);
+            }
+        } else if (portalType == PortalType.ENDER) {
+            if (endPortal == null) return null;
+            if (endPortal.cancel) {
+                event.setCancelled(true);
+                return null;
+            } else {
+                return endPortal.apply(travelAgent, from);
+            }
+        } else {
+            return null;
+        }
     }
 
     Location getSpawnLocation() {
@@ -151,46 +239,8 @@ public class MyWorld {
     }
 
     void setSpawnLocation(Location location) {
-        spawnLocation = SpawnLocation.of(location);
-        spawnLocation.apply(location.getWorld());
-    }
-
-    /**
-     * This function only saves some of the settings. In general,
-     * it is intended for admins to edit the config.yml, then use
-     * reload to apply the changes.
-     */
-    void save() {
-        ConfigurationSection config = plugin.getConfig().getConfigurationSection("worlds").getConfigurationSection(name);
-        if (config == null) config = plugin.getConfig().getConfigurationSection("worlds").createSection(name);
-        config.set("AutoLoad", autoLoad);
-        config.set("WorldType", worldType.name());
-        config.set("Environment", environment.name());
-        config.set("Generator", generator);
-        config.set("GeneratorSettings", generatorSettings);
-        config.set("Seed", seed);
-        if (gameRules != null) {
-            ConfigurationSection section = config.getConfigurationSection("GameRules");
-            if (section == null) section = config.createSection("GameRules");
-            for (Map.Entry<String, String> entry: gameRules.entrySet()) {
-                section.set(entry.getKey(), entry.getValue());
-            }
-        }
-        if (settings != null) {
-            ConfigurationSection section = config.getConfigurationSection("Settings");
-            if (section == null) section = config.createSection("Settings");
-            settings.save(section);
-        }
-        if (spawnLocation != null) {
-            ConfigurationSection section = config.getConfigurationSection("SpawnLocation");
-            if (section == null) section = config.createSection("SpawnLocation");
-            spawnLocation.save(section);
-        }
-        if (border != null) {
-            ConfigurationSection section = config.getConfigurationSection("Border");
-            if (section == null) section = config.createSection("Border");
-            border.save(section);
-        }
+        spawnLocation = MyLocation.of(location);
+        spawnLocation.setSpawn(location.getWorld());
     }
 
     static class Settings {
@@ -288,21 +338,21 @@ public class MyWorld {
     }
 
     @Value
-    static class SpawnLocation {
+    static class MyLocation {
         double x, y, z;
         float pitch, yaw;
 
-        static SpawnLocation of(Location loc) {
-            return new SpawnLocation(loc.getX(), loc.getY(), loc.getZ(), loc.getPitch(), loc.getYaw());
+        static MyLocation of(Location loc) {
+            return new MyLocation(loc.getX(), loc.getY(), loc.getZ(), loc.getPitch(), loc.getYaw());
         }
 
-        static SpawnLocation of(ConfigurationSection config) {
+        static MyLocation of(ConfigurationSection config) {
             double x = config.getDouble("x");
             double y = config.getDouble("y");
             double z = config.getDouble("z");
             float pitch = (float)config.getDouble("pitch");
             float yaw = (float)config.getDouble("yaw");
-            return new SpawnLocation(x, y, z, pitch, yaw);
+            return new MyLocation(x, y, z, pitch, yaw);
         }
 
         void save(ConfigurationSection config) {
@@ -317,7 +367,7 @@ public class MyWorld {
             return new Location(world, x, y, z, yaw, pitch);
         }
 
-        void apply(World world) {
+        void setSpawn(World world) {
             world.setSpawnLocation((int)x, (int)y, (int)z);
         }
     }
@@ -370,6 +420,62 @@ public class MyWorld {
             worldBorder.setDamageAmount(damageAmount);
             worldBorder.setDamageBuffer(damageBuffer);
             worldBorder.setWarningTime(warningTime);
+        }
+    }
+
+    class Portal {
+        String destination;
+        double ratio;
+        boolean cancel;
+        boolean createPortal;
+        boolean toWorldSpawn;
+        int searchRadius = 128;
+        int creationRadius = 16;
+
+        Location apply(TravelAgent travelAgent, Location from) {
+            travelAgent.setCanCreatePortal(createPortal);
+            travelAgent.setSearchRadius(searchRadius);
+            travelAgent.setCreationRadius(creationRadius);
+            if (destination == null || destination.isEmpty()) return null;
+            World world = plugin.getServer().getWorld(destination);
+            if (world == null) {
+                plugin.getLogger().warning("Portal destination world not found: " + destination);
+                return null;
+            }
+            Location to;
+            if (toWorldSpawn) {
+                to = world.getSpawnLocation();
+            } else {
+                to = new Location(world, from.getX() * ratio, from.getY(), from.getZ() * ratio, from.getYaw(), from.getPitch());
+            }
+            Location result;
+            if (createPortal) {
+                result = travelAgent.findOrCreate(to);
+            } else {
+                result = travelAgent.findPortal(to);
+            }
+            if (result == null) result = to;
+            return result;
+        }
+
+        void save(ConfigurationSection config) {
+            config.set("Destination", destination);
+            config.set("Ratio", ratio);
+            config.set("Cancel", cancel);
+            config.set("CreatePortal", createPortal);
+            config.set("ToWorldSpawn", toWorldSpawn);
+            config.set("SearchRadius", searchRadius);
+            config.set("CreationRadius", creationRadius);
+        }
+
+        void configure(ConfigurationSection config) {
+            destination = config.getString("Destination", null);
+            ratio = config.getDouble("Ratio", 1.0);
+            cancel = config.getBoolean("Cancel", false);
+            createPortal = config.getBoolean("CreatePortal", false);
+            toWorldSpawn = config.getBoolean("ToWorldSpawn", false);
+            searchRadius = config.getInt("SearchRadius", searchRadius);
+            creationRadius = config.getInt("CreationRadius", creationRadius);
         }
     }
 }

@@ -16,6 +16,7 @@ public class WorldsPlugin extends JavaPlugin {
         getCommand("worlds").setExecutor(new WorldsCommand(this));
         getCommand("wtp").setExecutor(new WTPCommand(this));
         loadAllWorlds();
+        getServer().getPluginManager().registerEvents(new PortalListener(this), this);
     }
 
     @Override
