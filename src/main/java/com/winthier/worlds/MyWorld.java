@@ -34,6 +34,7 @@ public class MyWorld {
     WorldType worldType;
     World.Environment environment;
     String generator, generatorSettings;
+    boolean generateStructures;
     Long seed;
     Map<String, String> gameRules = null;
     Settings settings = null;
@@ -56,6 +57,7 @@ public class MyWorld {
         }
         generator = config.getString("Generator");
         generatorSettings = config.getString("GeneratorSettings");
+        generateStructures = config.getBoolean("GenerateStructures", true);
         String tmp = config.getString("Seed");
         if (tmp != null && !tmp.isEmpty()) {
             try {
@@ -114,6 +116,7 @@ public class MyWorld {
         config.set("Environment", environment.name());
         config.set("Generator", generator);
         config.set("GeneratorSettings", generatorSettings);
+        config.set("GenerateStructures", generateStructures);
         config.set("Seed", seed);
         if (gameRules != null) {
             ConfigurationSection section = config.getConfigurationSection("GameRules");
@@ -170,6 +173,7 @@ public class MyWorld {
         creator.type(worldType);
         creator.environment(environment);
         creator.generator(generator);
+        creator.generateStructures(generateStructures);
         if (generatorSettings != null && !generatorSettings.isEmpty()) {
             creator.generatorSettings(generatorSettings);
         }
