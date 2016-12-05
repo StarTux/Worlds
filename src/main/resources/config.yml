@@ -46,7 +46,7 @@ worlds:
         ToWorldSpawn: false
         SearchRadius: 128
         CreationRadius: 16
-      TheEnd:
+      End:
         Destination: Example_the_end
         Cancel: false
         CreatePortal: false
