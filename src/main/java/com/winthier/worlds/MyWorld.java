@@ -192,8 +192,8 @@ public class MyWorld {
         if (world == null && autoLoad) {
             WorldCreator creator = getWorldCreator();
             world = creator.createWorld();
+            if (world != null) apply(world);
         }
-        if (world != null) apply(world);
         return world;
     }
 
@@ -459,7 +459,7 @@ public class MyWorld {
                 result = travelAgent.findPortal(to);
             }
             if (result == null) result = to;
-            return result;
+            return result.add(0.5, 0.0, 0.5);
         }
 
         void save(ConfigurationSection config) {

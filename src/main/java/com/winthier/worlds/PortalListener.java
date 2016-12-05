@@ -7,19 +7,22 @@ import org.bukkit.Material;
 import org.bukkit.PortalType;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityPortalEvent;
 import org.bukkit.event.player.PlayerPortalEvent;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
+import org.bukkit.scheduler.BukkitRunnable;
 
 @RequiredArgsConstructor
 class PortalListener implements Listener {
     final WorldsPlugin plugin;
+    final int PORTAL_COOLDOWN = 100;
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
-    public void onPlayerPortal(PlayerPortalEvent event) {
+    public void onPlayerPortal(final PlayerPortalEvent event) {
         Location from = event.getFrom();
         MyWorld myWorld = plugin.worldByName(from.getWorld().getName());
         if (myWorld == null) return;
@@ -32,9 +35,23 @@ class PortalListener implements Listener {
         } else {
             return;
         }
-        Location to = myWorld.applyPortalTravel(event, event.getPortalTravelAgent(), from, portalType);
-        if (to != null) event.setTo(to);
-        if (event.isCancelled()) event.getPlayer().setPortalCooldown(Math.max(event.getPlayer().getPortalCooldown(), 20));
+        final Location to = myWorld.applyPortalTravel(event, event.getPortalTravelAgent(), from, portalType);
+        final Player player = event.getPlayer();
+        if (to != null) {
+            event.setCancelled(true);
+            new BukkitRunnable() {
+                @Override public void run() {
+                    // The event likes to put players right below
+                    // the portal so they either suffocate or drop
+                    // to their doom.  Therefore, we cancel the
+                    // event and do the teleport manually.
+                    if (!player.isValid()) return;
+                    player.teleport(to);
+                    player.setPortalCooldown(Math.max(player.getPortalCooldown(), PORTAL_COOLDOWN));
+                    plugin.getLogger().info(String.format("Portal teleport %s to %s %.02f %.02f %.02f", player.getName(), to.getWorld().getName(), to.getX(), to.getY(), to.getZ()));
+                }
+            }.runTask(plugin);
+        }
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
@@ -58,6 +75,6 @@ class PortalListener implements Listener {
         if (portalType == null) return;
         Location to = myWorld.applyPortalTravel(event, event.getPortalTravelAgent(), from, portalType);
         if (to != null) event.setTo(to);
-        if (event.isCancelled()) event.getEntity().setPortalCooldown(Math.max(event.getEntity().getPortalCooldown(), 20));
+        if (event.isCancelled()) event.getEntity().setPortalCooldown(Math.max(event.getEntity().getPortalCooldown(), PORTAL_COOLDOWN));
     }
 }
