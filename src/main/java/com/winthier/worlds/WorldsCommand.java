@@ -47,6 +47,16 @@ public class WorldsCommand implements CommandExecutor {
             plugin.reloadWorlds();
             plugin.loadAllWorlds();
             Msg.info(sender, "Worlds reloaded");
+        } else if (cmd.equals("apply")) {
+            int count = 0;
+            for (MyWorld myWorld: plugin.getWorlds()) {
+                World world = myWorld.getWorld();
+                if (world != null) {
+                    myWorld.apply(world);
+                    count += 1;
+                }
+            }
+            Msg.info(sender, "Applied %d world settings", count);
         } else if (cmd.equals("import")) {
             if (args.length != 2) return false;
             String name = args[1];
