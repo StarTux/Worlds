@@ -9,6 +9,15 @@ commands:
     aliases: [ world ]
     description: Admin interface
     permission: worlds.worlds
+    usage: |-
+      /world list - List worlds
+      /world who - List players in worlds
+      /world reload - Reload config
+      /world apply - (Re)apply world settings
+      /world listloaded - List loaded Bukkit worlds
+      /world import <world> - Import Bukkit world settings
+      /world setspawn - Set world spawn
+      /world unload <world> - Unload Bukkit world
   wtp:
     description: World teleport
     permission: worlds.wtp
