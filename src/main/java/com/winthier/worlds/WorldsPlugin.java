@@ -15,8 +15,8 @@ public class WorldsPlugin extends JavaPlugin {
         reloadConfig();
         getCommand("worlds").setExecutor(new WorldsCommand(this));
         getCommand("wtp").setExecutor(new WTPCommand(this));
-        // Apply settings to the default worlds (and potentially
-        // already loaded worlds)
+        // Apply settings to default worlds (and other previously
+        // loaded ones)
         for (World world: getServer().getWorlds()) {
             MyWorld myWorld = worldByName(world.getName());
             if (myWorld != null) myWorld.apply(world);
