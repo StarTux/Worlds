@@ -37,6 +37,7 @@ class PortalListener implements Listener {
         }
         final Location to = myWorld.applyPortalTravel(event, event.getPortalTravelAgent(), from, portalType);
         final Player player = event.getPlayer();
+        player.setPortalCooldown(Math.max(player.getPortalCooldown(), PORTAL_COOLDOWN));
         if (to != null) {
             event.setCancelled(true);
             new BukkitRunnable() {
@@ -47,7 +48,6 @@ class PortalListener implements Listener {
                     // event and do the teleport manually.
                     if (!player.isValid()) return;
                     player.teleport(to);
-                    player.setPortalCooldown(Math.max(player.getPortalCooldown(), PORTAL_COOLDOWN));
                     plugin.getLogger().info(String.format("Portal teleport %s to %s %.02f %.02f %.02f", player.getName(), to.getWorld().getName(), to.getX(), to.getY(), to.getZ()));
                 }
             }.runTask(plugin);
@@ -74,7 +74,7 @@ class PortalListener implements Listener {
         }
         if (portalType == null) return;
         Location to = myWorld.applyPortalTravel(event, event.getPortalTravelAgent(), from, portalType);
+        event.getEntity().setPortalCooldown(Math.max(event.getEntity().getPortalCooldown(), PORTAL_COOLDOWN));
         if (to != null) event.setTo(to);
-        if (event.isCancelled()) event.getEntity().setPortalCooldown(Math.max(event.getEntity().getPortalCooldown(), PORTAL_COOLDOWN));
     }
 }
