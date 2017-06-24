@@ -391,6 +391,7 @@ public class MyWorld {
                 centerZ = list.get(1);
             }
             size = config.getDouble("Size");
+            damageAmount = config.getDouble("DamageAmount");
             damageBuffer = config.getDouble("DamageBuffer");
             warningDistance = config.getInt("WarningDistance");
             warningTime = config.getInt("WarningTime");
