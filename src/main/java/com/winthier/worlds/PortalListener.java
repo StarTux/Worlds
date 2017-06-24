@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.PortalType;
+import org.bukkit.WorldBorder;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
@@ -14,6 +15,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityPortalEvent;
 import org.bukkit.event.player.PlayerPortalEvent;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
+import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 
 @RequiredArgsConstructor
@@ -76,5 +78,21 @@ class PortalListener implements Listener {
         Location to = myWorld.applyPortalTravel(event, event.getPortalTravelAgent(), from, portalType);
         event.getEntity().setPortalCooldown(Math.max(event.getEntity().getPortalCooldown(), PORTAL_COOLDOWN));
         if (to != null) event.setTo(to);
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
+    public void onPlayerTeleport(PlayerTeleportEvent event) {
+        if (event.getPlayer().isOp()) return;
+        WorldBorder border = event.getTo().getWorld().getWorldBorder();
+        Location center = border.getCenter();
+        double size = border.getSize() * 0.5;
+        double x = event.getTo().getX();
+        double z = event.getTo().getZ();
+        if (x > center.getX() + size
+            || x < center.getX() - size
+            || z > center.getZ() + size
+            || z < center.getZ() - size) {
+            event.setCancelled(true);
+        }
     }
 }
