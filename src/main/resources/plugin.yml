@@ -4,6 +4,7 @@ author: StarTux
 version: 0.1
 main: com.winthier.worlds.WorldsPlugin
 depend: []
+loadbefore: [ Custom, AdviceAnimals ]
 commands:
   worlds:
     aliases: [ world ]
