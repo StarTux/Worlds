@@ -41,6 +41,11 @@ public class MyWorld {
     MyLocation spawnLocation = null;
     Border border = null;
     Portal netherPortal, endPortal;
+    RushNight rushNight = null;
+
+    enum RushNight {
+        NEVER, SLEEP, ALWAYS;
+    }
 
     void configure(ConfigurationSection config) {
         autoLoad = config.getBoolean("AutoLoad", false);
@@ -101,6 +106,28 @@ public class MyWorld {
                 endPortal.configure(portalSection);
             }
         }
+        final String rushNightString = config.getString("RushNight");
+        if (rushNightString == null) {
+            this.rushNight = RushNight.NEVER;
+        } else {
+            switch (rushNightString.toLowerCase()) {
+            case "":
+                this.rushNight = RushNight.NEVER;
+                break;
+            case "never":
+                this.rushNight = RushNight.NEVER;
+                break;
+            case "sleep":
+                this.rushNight = RushNight.SLEEP;
+                break;
+            case "always":
+                this.rushNight = RushNight.ALWAYS;
+                break;
+            default:
+                this.rushNight = RushNight.NEVER;
+                plugin.getLogger().warning("Unknown RushNight setting for " + name + ": " + rushNightString); 
+            }
+        }
     }
 
     /**
@@ -150,6 +177,7 @@ public class MyWorld {
             if (section == null) section = config.createSection("Portal.End");
             endPortal.save(section);
         }
+        config.set("RushNight", rushNight);
     }
 
     void configure(World world) {

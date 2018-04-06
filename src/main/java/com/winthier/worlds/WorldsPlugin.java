@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
 
 public class WorldsPlugin extends JavaPlugin {
     List<MyWorld> worlds = null;
@@ -23,10 +25,52 @@ public class WorldsPlugin extends JavaPlugin {
         }
         loadAllWorlds();
         getServer().getPluginManager().registerEvents(new PortalListener(this), this);
+        new BukkitRunnable() {
+            @Override public void run() {
+                onTick();
+            }
+        }.runTaskTimer(this, 1, 1);
     }
 
     @Override
     public void onDisable() {
+    }
+
+    void onTick() {
+        for (MyWorld myWorld: getWorlds()) {
+            World world = myWorld.getWorld();
+            if (world == null) continue;
+            if (world.getEnvironment() == World.Environment.NORMAL) {
+                long time;
+                switch (myWorld.rushNight) {
+                case NEVER:
+                    break;
+                case SLEEP:
+                    time = world.getTime();
+                    if (time > 13000 && time < 23000) {
+                        int total = 0;
+                        int sleep = 0;
+                        for (Player player: world.getPlayers()) {
+                            total += 1;
+                            if (player.isSleeping()) sleep += 1;
+                        }
+                        if (sleep > 0) {
+                            long skip = (long)((20 * sleep) / total);
+                            if (skip > 1) {
+                                world.setTime(time + skip - 1);
+                            }
+                        }
+                    }
+                    break;
+                case ALWAYS:
+                    time = world.getTime();
+                    if (time > 13000 && time < 23000) {
+                        world.setTime(time + 19);
+                    }
+                    break;
+                }
+            }
+        }
     }
 
     List<MyWorld> getWorlds() {
