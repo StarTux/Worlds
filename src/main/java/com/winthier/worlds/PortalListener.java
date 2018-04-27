@@ -103,7 +103,7 @@ class PortalListener implements Listener {
     public void onPlayerChangedWorld(PlayerChangedWorldEvent event) {
         final Player player = event.getPlayer();
         if (player.hasPermission("worlds.override")) return;
-        final MyWorld myWorld = plugin.worldByName(event.getFrom().getName());
+        final MyWorld myWorld = plugin.worldByName(player.getWorld().getName());
         if (myWorld == null) return;
         final GameMode gameMode = myWorld.getGameMode();
         if (gameMode == null) return;
