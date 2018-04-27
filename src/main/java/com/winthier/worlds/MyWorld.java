@@ -53,7 +53,7 @@ public class MyWorld {
         autoLoad = config.getBoolean("AutoLoad", false);
         // World Creator
         try {
-            worldType = WorldType.valueOf(config.getString("WorldType", "NORMAL"));
+            worldType = WorldType.valueOf(config.getString("Type", "NORMAL"));
         } catch (IllegalArgumentException iae) {
             iae.printStackTrace();
         }
@@ -152,7 +152,7 @@ public class MyWorld {
         ConfigurationSection config = plugin.getConfig().getConfigurationSection("worlds").getConfigurationSection(name);
         if (config == null) config = plugin.getConfig().getConfigurationSection("worlds").createSection(name);
         config.set("AutoLoad", autoLoad);
-        config.set("WorldType", worldType.name());
+        config.set("Type", worldType.name());
         config.set("Environment", environment.name());
         config.set("Generator", generator);
         config.set("GeneratorSettings", generatorSettings);
