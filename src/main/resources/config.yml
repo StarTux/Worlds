@@ -7,6 +7,8 @@ worlds:
     Generator: VoidGenerator
     GeneratorSettings: ''
     Seed: ''
+    RushNight: NEVER # NEVER, SLEEP, ALWAYS
+    GameMode: SURVIVAL # ADVENTURE, CREATIVE, SPECTATOR, SURVIVAL
     GameRules:
       doMobGriefing: false
     Settings:

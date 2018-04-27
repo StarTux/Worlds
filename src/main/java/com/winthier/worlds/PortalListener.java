@@ -2,6 +2,7 @@ package com.winthier.worlds;
 
 import java.util.Arrays;
 import lombok.RequiredArgsConstructor;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.PortalType;
@@ -13,6 +14,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityPortalEvent;
+import org.bukkit.event.player.PlayerChangedWorldEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerPortalEvent;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.event.player.PlayerTeleportEvent;
@@ -94,5 +97,27 @@ class PortalListener implements Listener {
             || z < center.getZ() - size) {
             event.setCancelled(true);
         }
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
+    public void onPlayerChangedWorld(PlayerChangedWorldEvent event) {
+        final Player player = event.getPlayer();
+        if (player.hasPermission("worlds.override")) return;
+        final MyWorld myWorld = plugin.worldByName(event.getFrom().getName());
+        if (myWorld == null) return;
+        final GameMode gameMode = myWorld.getGameMode();
+        if (gameMode == null) return;
+        player.setGameMode(gameMode);
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
+    public void onPlayerJoin(PlayerJoinEvent event) {
+        final Player player = event.getPlayer();
+        if (player.hasPermission("worlds.override")) return;
+        final MyWorld myWorld = plugin.worldByName(player.getWorld().getName());
+        if (myWorld == null) return;
+        final GameMode gameMode = myWorld.getGameMode();
+        if (gameMode == null) return;
+        player.setGameMode(gameMode);
     }
 }

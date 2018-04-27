@@ -27,3 +27,5 @@ permissions:
     default: op
   worlds.wtp:
     default: op
+  worlds.override:
+    default: op

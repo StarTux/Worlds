@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.bukkit.Difficulty;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.PortalType;
 import org.bukkit.TravelAgent;
@@ -42,6 +43,7 @@ public class MyWorld {
     Border border = null;
     Portal netherPortal, endPortal;
     RushNight rushNight = null;
+    GameMode gameMode = null;
 
     enum RushNight {
         NEVER, SLEEP, ALWAYS;
@@ -128,6 +130,17 @@ public class MyWorld {
                 plugin.getLogger().warning("Unknown RushNight setting for " + name + ": " + rushNightString); 
             }
         }
+        final String gameModeString = config.getString("GameMode");
+        if (gameModeString == null) {
+            this.gameMode = GameMode.SURVIVAL;
+        } else {
+            try {
+                this.gameMode = GameMode.valueOf(gameModeString.toUpperCase());
+            } catch (IllegalArgumentException iae) {
+                System.err.println("Setting GameMode in world " + name);
+                iae.printStackTrace();
+            }
+        }
     }
 
     /**
@@ -178,6 +191,7 @@ public class MyWorld {
             endPortal.save(section);
         }
         config.set("RushNight", rushNight);
+        config.set("GameMode", gameMode);
     }
 
     void configure(World world) {
