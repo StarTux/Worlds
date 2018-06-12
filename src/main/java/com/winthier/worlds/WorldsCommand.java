@@ -11,7 +11,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 @RequiredArgsConstructor
-public class WorldsCommand implements CommandExecutor {
+final class WorldsCommand implements CommandExecutor {
     final WorldsPlugin plugin;
 
     @Override

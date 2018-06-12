@@ -22,9 +22,9 @@ import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 
 @RequiredArgsConstructor
-class PortalListener implements Listener {
+final class PortalListener implements Listener {
     final WorldsPlugin plugin;
-    final int PORTAL_COOLDOWN = 100;
+    private static final int PORTAL_COOLDOWN = 100;
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
     public void onPlayerPortal(final PlayerPortalEvent event) {

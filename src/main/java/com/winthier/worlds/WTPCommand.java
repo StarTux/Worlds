@@ -10,7 +10,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 @RequiredArgsConstructor
-public class WTPCommand implements CommandExecutor {
+final class WTPCommand implements CommandExecutor {
     final WorldsPlugin plugin;
 
     @Override

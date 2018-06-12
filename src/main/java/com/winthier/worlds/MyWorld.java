@@ -27,23 +27,23 @@ import org.bukkit.event.Cancellable;
  */
 @RequiredArgsConstructor
 @Getter
-public class MyWorld {
-    final WorldsPlugin plugin;
+final class MyWorld {
+    private final WorldsPlugin plugin;
     // World Creator Settings
-    final String name;
-    boolean autoLoad;
-    WorldType worldType;
-    World.Environment environment;
-    String generator, generatorSettings;
-    boolean generateStructures;
-    Long seed;
-    Map<String, String> gameRules = null;
-    Settings settings = null;
-    MyLocation spawnLocation = null;
-    Border border = null;
-    Portal netherPortal, endPortal;
-    RushNight rushNight = null;
-    GameMode gameMode = null;
+    private final String name;
+    private boolean autoLoad;
+    private WorldType worldType;
+    private World.Environment environment;
+    private String generator, generatorSettings;
+    private boolean generateStructures;
+    private Long seed;
+    private Map<String, String> gameRules = null;
+    private Settings settings = null;
+    private MyLocation spawnLocation = null;
+    private Border border = null;
+    private Portal netherPortal, endPortal;
+    private RushNight rushNight = null;
+    private GameMode gameMode = null;
 
     enum RushNight {
         NEVER, SLEEP, ALWAYS;
@@ -127,7 +127,7 @@ public class MyWorld {
                 break;
             default:
                 this.rushNight = RushNight.NEVER;
-                plugin.getLogger().warning("Unknown RushNight setting for " + name + ": " + rushNightString); 
+                plugin.getLogger().warning("Unknown RushNight setting for " + name + ": " + rushNightString);
             }
         }
         final String gameModeString = config.getString("GameMode");
@@ -291,22 +291,22 @@ public class MyWorld {
 
     static class Settings {
         //   General
-        Boolean autoSave;
-        Difficulty difficulty;
-        Boolean keepSpawnInMemory;
-        Boolean pvp;
+        private Boolean autoSave;
+        private Difficulty difficulty;
+        private Boolean keepSpawnInMemory;
+        private Boolean pvp;
         //   Mob Spawning
         //     Allow
-        Boolean allowMonsters;
-        Boolean allowAnimals;
+        private Boolean allowMonsters;
+        private Boolean allowAnimals;
         //    Spawn Limits
-        Integer ambientSpawnLimit;
-        Integer animalSpawnLimit;
-        Integer monsterSpawnLimit;
-        Integer waterAnimalSpawnLimit;
+        private Integer ambientSpawnLimit;
+        private Integer animalSpawnLimit;
+        private Integer monsterSpawnLimit;
+        private Integer waterAnimalSpawnLimit;
         //     Ticks Per
-        Long ticksPerAnimalSpawns;
-        Long ticksPerMonsterSpawns;
+        private Long ticksPerAnimalSpawns;
+        private Long ticksPerMonsterSpawns;
 
         void configure(ConfigurationSection config) {
             autoSave = config.getBoolean("AutoSave", true);
@@ -385,8 +385,8 @@ public class MyWorld {
 
     @Value
     static class MyLocation {
-        double x, y, z;
-        float pitch, yaw;
+        private double x, y, z;
+        private float pitch, yaw;
 
         static MyLocation of(Location loc) {
             return new MyLocation(loc.getX(), loc.getY(), loc.getZ(), loc.getPitch(), loc.getYaw());
@@ -419,12 +419,12 @@ public class MyWorld {
     }
 
     static class Border {
-        double centerX, centerZ;
-        double size;
-        double damageAmount;
-        double damageBuffer;
-        int warningDistance;
-        int warningTime;
+        private double centerX, centerZ;
+        private double size;
+        private double damageAmount;
+        private double damageBuffer;
+        private int warningDistance;
+        private int warningTime;
 
         void configure(ConfigurationSection config) {
             List<Double> list = config.getDoubleList("Center");
@@ -471,13 +471,13 @@ public class MyWorld {
     }
 
     class Portal {
-        String destination;
-        double ratio;
-        boolean cancel;
-        boolean createPortal;
-        boolean toWorldSpawn;
-        int searchRadius = 128;
-        int creationRadius = 16;
+        private String destination;
+        private double ratio;
+        private boolean cancel;
+        private boolean createPortal;
+        private boolean toWorldSpawn;
+        private int searchRadius = 128;
+        private int creationRadius = 16;
 
         Location apply(TravelAgent travelAgent, Location from) {
             travelAgent.setCanCreatePortal(createPortal);

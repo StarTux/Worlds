@@ -8,8 +8,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
-public class WorldsPlugin extends JavaPlugin {
-    List<MyWorld> worlds = null;
+public final class WorldsPlugin extends JavaPlugin {
+    private List<MyWorld> worlds = null;
 
     @Override
     public void onEnable() {
@@ -42,7 +42,7 @@ public class WorldsPlugin extends JavaPlugin {
             if (world == null) continue;
             if (world.getEnvironment() == World.Environment.NORMAL) {
                 long time;
-                switch (myWorld.rushNight) {
+                switch (myWorld.getRushNight()) {
                 case NEVER:
                     break;
                 case SLEEP:
@@ -67,6 +67,8 @@ public class WorldsPlugin extends JavaPlugin {
                     if (time > 13000 && time < 23000) {
                         world.setTime(time + 19);
                     }
+                    break;
+                default:
                     break;
                 }
             }
@@ -99,7 +101,7 @@ public class WorldsPlugin extends JavaPlugin {
 
     MyWorld worldByName(String name) {
         for (MyWorld myWorld: getWorlds()) {
-            if (name.equals(myWorld.name)) {
+            if (name.equals(myWorld.getName())) {
                 return myWorld;
             }
         }
