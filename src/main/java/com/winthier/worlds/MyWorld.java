@@ -190,8 +190,8 @@ public class MyWorld {
             if (section == null) section = config.createSection("Portal.End");
             endPortal.save(section);
         }
-        config.set("RushNight", rushNight);
-        config.set("GameMode", gameMode);
+        config.set("RushNight", rushNight.name());
+        config.set("GameMode", gameMode.name());
     }
 
     void configure(World world) {
