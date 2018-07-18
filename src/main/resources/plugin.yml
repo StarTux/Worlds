@@ -2,6 +2,7 @@ name: Worlds
 description: Simple world loading plugin
 author: StarTux
 version: 0.1
+api-version: 1.13
 main: com.winthier.worlds.WorldsPlugin
 depend: []
 loadbefore: [ Custom, AdviceAnimals ]
