@@ -69,10 +69,10 @@ final class PortalListener implements Listener {
         for (BlockFace dir: Arrays.asList(BlockFace.SELF, BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST, BlockFace.DOWN, BlockFace.UP)) {
             Block block2 = block.getRelative(dir);
             Material mat = block2.getType();
-            if (mat == Material.PORTAL) {
+            if (mat == Material.NETHER_PORTAL) {
                 portalType = PortalType.NETHER;
                 break;
-            } else if (mat == Material.ENDER_PORTAL) {
+            } else if (mat == Material.END_PORTAL) {
                 portalType = PortalType.ENDER;
                 break;
             }
