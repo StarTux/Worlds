@@ -106,8 +106,7 @@ final class PortalListener implements Listener {
         final MyWorld myWorld = plugin.worldByName(player.getWorld().getName());
         if (myWorld == null) return;
         final GameMode gameMode = myWorld.getGameMode();
-        if (gameMode == null) return;
-        player.setGameMode(gameMode);
+        if (gameMode != null) player.setGameMode(gameMode);
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
@@ -117,7 +116,6 @@ final class PortalListener implements Listener {
         final MyWorld myWorld = plugin.worldByName(player.getWorld().getName());
         if (myWorld == null) return;
         final GameMode gameMode = myWorld.getGameMode();
-        if (gameMode == null) return;
-        player.setGameMode(gameMode);
+        if (gameMode != null) player.setGameMode(gameMode);
     }
 }

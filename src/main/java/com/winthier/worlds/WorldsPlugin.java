@@ -40,7 +40,7 @@ public final class WorldsPlugin extends JavaPlugin {
         for (MyWorld myWorld: getWorlds()) {
             World world = myWorld.getWorld();
             if (world == null) continue;
-            if (world.getEnvironment() == World.Environment.NORMAL) {
+            if (world.getEnvironment() == World.Environment.NORMAL && myWorld.getRushNight() != null) {
                 long time;
                 switch (myWorld.getRushNight()) {
                 case NEVER:

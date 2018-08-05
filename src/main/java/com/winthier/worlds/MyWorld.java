@@ -110,24 +110,13 @@ final class MyWorld {
         }
         final String rushNightString = config.getString("RushNight");
         if (rushNightString == null) {
-            this.rushNight = RushNight.NEVER;
+            this.rushNight = null;
         } else {
-            switch (rushNightString.toLowerCase()) {
-            case "":
-                this.rushNight = RushNight.NEVER;
-                break;
-            case "never":
-                this.rushNight = RushNight.NEVER;
-                break;
-            case "sleep":
-                this.rushNight = RushNight.SLEEP;
-                break;
-            case "always":
-                this.rushNight = RushNight.ALWAYS;
-                break;
-            default:
-                this.rushNight = RushNight.NEVER;
+            try {
+                this.rushNight = RushNight.valueOf(rushNightString.toUpperCase());
+            } catch (IllegalArgumentException iae) {
                 plugin.getLogger().warning("Unknown RushNight setting for " + name + ": " + rushNightString);
+                this.rushNight = null;
             }
         }
         final String gameModeString = config.getString("GameMode");
@@ -137,8 +126,8 @@ final class MyWorld {
             try {
                 this.gameMode = GameMode.valueOf(gameModeString.toUpperCase());
             } catch (IllegalArgumentException iae) {
-                System.err.println("Setting GameMode in world " + name);
-                iae.printStackTrace();
+                System.err.println("Unknown GameMode setting for " + name + ": " + gameModeString);
+                this.gameMode = null;
             }
         }
     }
@@ -190,8 +179,8 @@ final class MyWorld {
             if (section == null) section = config.createSection("Portal.End");
             endPortal.save(section);
         }
-        config.set("RushNight", rushNight.name());
-        config.set("GameMode", gameMode.name());
+        if (rushNight != null) config.set("RushNight", rushNight.name());
+        if (gameMode != null) config.set("GameMode", gameMode.name());
     }
 
     void configure(World world) {
