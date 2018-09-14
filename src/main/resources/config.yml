@@ -55,5 +55,3 @@ worlds:
         ToWorldSpawn: true
         SearchRadius: 128
         CreationRadius: 16
-
-
