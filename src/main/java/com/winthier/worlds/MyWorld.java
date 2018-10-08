@@ -17,7 +17,9 @@ import org.bukkit.WorldBorder;
 import org.bukkit.WorldCreator;
 import org.bukkit.WorldType;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.event.Cancellable;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
+import org.bukkit.metadata.FixedMetadataValue;
 
 /**
  * This is a simple wrapper for a world section in the
@@ -44,6 +46,7 @@ final class MyWorld {
     private Portal netherPortal, endPortal;
     private RushNight rushNight = null;
     private GameMode gameMode = null;
+    private static final String META_PORTING = "worlds.porting";
 
     enum RushNight {
         NEVER, SLEEP, ALWAYS;
@@ -126,7 +129,7 @@ final class MyWorld {
             try {
                 this.gameMode = GameMode.valueOf(gameModeString.toUpperCase());
             } catch (IllegalArgumentException iae) {
-                System.err.println("Unknown GameMode setting for " + name + ": " + gameModeString);
+                plugin.warning("Unknown GameMode setting for " + name + ": " + gameModeString);
                 this.gameMode = null;
             }
         }
@@ -242,25 +245,27 @@ final class MyWorld {
         if (border != null) border.apply(world);
     }
 
-    Location applyPortalTravel(Cancellable event, TravelAgent travelAgent, Location from, PortalType portalType) {
+    /**
+     * Return true if event shall be cancelled because we take over,
+     * false wise.
+     */
+    boolean applyPortalTravel(TravelAgent travelAgent, Entity entity, Location from, PortalType portalType) {
         if (portalType == PortalType.NETHER) {
-            if (netherPortal == null) return null;
+            if (netherPortal == null) return false;
             if (netherPortal.cancel) {
-                event.setCancelled(true);
-                return null;
+                return true;
             } else {
-                return netherPortal.apply(travelAgent, from);
+                return netherPortal.apply(travelAgent, entity, from);
             }
         } else if (portalType == PortalType.ENDER) {
-            if (endPortal == null) return null;
+            if (endPortal == null) return false;
             if (endPortal.cancel) {
-                event.setCancelled(true);
-                return null;
+                return true;
             } else {
-                return endPortal.apply(travelAgent, from);
+                return endPortal.apply(travelAgent, entity, from);
             }
         } else {
-            return null;
+            return false;
         }
     }
 
@@ -467,16 +472,25 @@ final class MyWorld {
         private boolean toWorldSpawn;
         private int searchRadius = 128;
         private int creationRadius = 16;
+        private transient boolean warned = false;
 
-        Location apply(TravelAgent travelAgent, Location from) {
+        /**
+         * Return true if the event shall be cancelled because we take
+         * over, false otherwise.
+         */
+        boolean apply(TravelAgent travelAgent, Entity entity, Location from) {
+            if (entity.hasMetadata(META_PORTING)) return true;
             travelAgent.setCanCreatePortal(createPortal);
             travelAgent.setSearchRadius(searchRadius);
             travelAgent.setCreationRadius(creationRadius);
-            if (destination == null || destination.isEmpty()) return null;
+            if (destination == null || destination.isEmpty()) return false;
             World world = plugin.getServer().getWorld(destination);
             if (world == null) {
-                plugin.getLogger().warning("Portal destination world not found: " + destination);
-                return null;
+                if (!warned) {
+                    plugin.getLogger().warning("Portal destination world not found: " + destination);
+                    warned = true;
+                }
+                return true;
             }
             Location to;
             if (toWorldSpawn) {
@@ -484,14 +498,29 @@ final class MyWorld {
             } else {
                 to = new Location(world, from.getX() * ratio, from.getY(), from.getZ() * ratio, from.getYaw(), from.getPitch());
             }
-            Location result;
-            if (createPortal) {
-                result = travelAgent.findOrCreate(to);
-            } else {
-                result = travelAgent.findPortal(to);
-            }
-            if (result == null) result = to;
-            return result.add(0.5, 0.0, 0.5);
+            entity.setMetadata(META_PORTING, new FixedMetadataValue(plugin, true));
+            world.getChunkAtAsync(to, (c) -> {
+                    if (!entity.isValid()) return;
+                    entity.removeMetadata(META_PORTING, plugin);
+                    Location dest;
+                    if (createPortal) {
+                        dest = travelAgent.findOrCreate(to);
+                    } else {
+                        dest = travelAgent.findPortal(to);
+                    }
+                    if (dest == null) dest = to;
+                    dest = dest.add(0.5, 0.0, 0.5);
+                    // The event likes to put entities right below
+                    // the portal so they either suffocate or drop
+                    // to their doom.  Therefore, we cancel the
+                    // event and do the teleport manually.
+                    if (!entity.isValid()) return;
+                    entity.teleport(dest);
+                    if (entity instanceof Player) {
+                        plugin.getLogger().info(String.format("Portal teleport %s to %s %.02f %.02f %.02f", entity.getName(), to.getWorld().getName(), to.getX(), to.getY(), to.getZ()));
+                    }
+                });
+            return true;
         }
 
         void save(ConfigurationSection config) {
