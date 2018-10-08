@@ -129,7 +129,7 @@ final class MyWorld {
             try {
                 this.gameMode = GameMode.valueOf(gameModeString.toUpperCase());
             } catch (IllegalArgumentException iae) {
-                plugin.warning("Unknown GameMode setting for " + name + ": " + gameModeString);
+                plugin.getLogger().warning("Unknown GameMode setting for " + name + ": " + gameModeString);
                 this.gameMode = null;
             }
         }
