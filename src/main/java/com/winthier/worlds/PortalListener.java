@@ -40,8 +40,9 @@ final class PortalListener implements Listener {
         } else {
             return;
         }
-        if (myWorld.applyPortalTravel(event.getPortalTravelAgent(), player, from, portalType)) {
+        if (myWorld.applyPortalTravel(player, from, portalType)) {
             event.setCancelled(true);
+            player.setPortalCooldown(200);
         }
     }
 
@@ -65,8 +66,9 @@ final class PortalListener implements Listener {
             }
         }
         if (portalType == null) return;
-        if (myWorld.applyPortalTravel(event.getPortalTravelAgent(), entity, from, portalType)) {
+        if (myWorld.applyPortalTravel(entity, from, portalType)) {
             event.setCancelled(true);
+            entity.setPortalCooldown(200);
         }
     }
 
