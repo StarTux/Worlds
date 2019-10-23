@@ -19,6 +19,7 @@ commands:
       /world listloaded - List loaded Bukkit worlds
       /world import <world> - Import Bukkit world settings
       /world setspawn - Set world spawn
+      /world load <world> [environment] - Load world
       /world unload <world> - Unload Bukkit world
   wtp:
     description: World teleport

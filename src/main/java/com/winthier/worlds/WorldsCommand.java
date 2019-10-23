@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.WorldCreator;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -31,6 +32,30 @@ final class WorldsCommand implements CommandExecutor {
                 }
                 sender.sendMessage(sb.toString());
             }
+        } else if (cmd.equals("load")) {
+            if (args.length < 2) return false;
+            if (args.length > 3) return false;
+            String name = args[1];
+            if (plugin.getServer().getWorld(name) != null) {
+                sender.sendMessage(ChatColor.RED + "World already loaded: " + name + "!");
+                return true;
+            }
+            WorldCreator creator = WorldCreator.name(name);
+            World.Environment env;
+            if (args.length >= 3) {
+                String arg = args[2];
+                try {
+                    env = World.Environment.valueOf(arg.toUpperCase());
+                } catch (IllegalArgumentException iae) {
+                    sender.sendMessage(ChatColor.RED + "Invalid environment: " + arg);
+                    return true;
+                }
+            } else {
+                env = World.Environment.NORMAL;
+            }
+            creator.environment(env);
+            World world = creator.createWorld();
+            sender.sendMessage("World loaded: " + world.getName());
         } else if (cmd.equals("listloaded")) {
             int count = 0;
             for (World world: plugin.getServer().getWorlds()) {
