@@ -23,6 +23,9 @@ commands:
       /world unload <world> - Unload Bukkit world
   wtp:
     description: World teleport
+    usage: |-
+      /wtp <world> - Teleport to world.
+      /wtp <player> <world> - Teleport player to world.
     permission: worlds.wtp
 permissions:
   worlds.worlds:

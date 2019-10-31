@@ -16,8 +16,25 @@ final class WTPCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String alias, String[] args) {
         final Player player = sender instanceof Player ? (Player)sender : null;
-        if (player == null || args.length != 1) return false;
-        String name = args[0];
+        Player target;
+        String name;
+        if (args.length == 1) {
+            target = player;
+            if (target == null) {
+                sender.sendMessage("Player expected.");
+                return true;
+            }
+            name = args[0];
+        } else if (args.length == 2) {
+            target = plugin.getServer().getPlayerExact(args[0]);
+            if (target == null) {
+                sender.sendMessage("Player not found: " + args[0]);
+                return true;
+            }
+            name = args[1];
+        } else {
+            return false;
+        }   
         MyWorld myWorld = plugin.worldByName(name);
         Location loc = null;
         if (myWorld != null) {
@@ -27,11 +44,12 @@ final class WTPCommand implements CommandExecutor {
             if (world != null) loc = world.getSpawnLocation();
         }
         if (loc == null) {
-            player.sendMessage(ChatColor.RED + "World not found: " + name);
+            sender.sendMessage(ChatColor.RED + "World not found: " + name);
             return true;
         }
-        player.teleport(loc);
-        player.sendMessage(ChatColor.YELLOW + "Teleported to spawn location of world " + name);
+        target.teleport(loc);
+        sender.sendMessage(ChatColor.YELLOW + "Teleported " + target.getName()
+                           + " to spawn location of world " + name);
         return true;
     }
 }
