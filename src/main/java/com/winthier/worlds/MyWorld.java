@@ -43,6 +43,8 @@ final class MyWorld {
     private Portal netherPortal, endPortal;
     private RushNight rushNight = null;
     private GameMode gameMode = null;
+    private String copyTime;
+    private Long fullTime;
 
     enum RushNight {
         NEVER, SLEEP, ALWAYS;
@@ -129,6 +131,10 @@ final class MyWorld {
                 this.gameMode = null;
             }
         }
+        copyTime = config.getString("CopyTime");
+        if (config.isLong("FullTime") || config.isInt("FullTime")) {
+            fullTime = config.getLong("FullTime");
+        }
     }
 
     /**
@@ -180,6 +186,8 @@ final class MyWorld {
         }
         if (rushNight != null) config.set("RushNight", rushNight.name());
         if (gameMode != null) config.set("GameMode", gameMode.name());
+        if (copyTime != null) config.set("CopyTime", copyTime);
+        if (fullTime != null) config.set("FullTime", fullTime);
     }
 
     void configure(World world) {
@@ -239,6 +247,7 @@ final class MyWorld {
         if (settings != null) settings.apply(world);
         if (spawnLocation != null) spawnLocation.setSpawn(world);
         if (border != null) border.apply(world);
+        if (fullTime != null) world.setFullTime(fullTime);
     }
 
     /**

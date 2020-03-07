@@ -72,6 +72,12 @@ public final class WorldsPlugin extends JavaPlugin {
                     break;
                 }
             }
+            if (myWorld.getCopyTime() != null) {
+                World master = getServer().getWorld(myWorld.getCopyTime());
+                if (master != null) {
+                    world.setFullTime(master.getFullTime());
+                }
+            }
         }
     }
 

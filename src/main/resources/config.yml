@@ -9,6 +9,8 @@ worlds:
     Seed: ''
     RushNight: NEVER # NEVER, SLEEP, ALWAYS
     GameMode: SURVIVAL # ADVENTURE, CREATIVE, SPECTATOR, SURVIVAL
+    CopyTime: otherWorldName # Copy time of other world every tick
+    FullTime: 6000 # Set full time when world is loaded (or applied)
     GameRules:
       doMobGriefing: false
     Settings:
