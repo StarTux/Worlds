@@ -10,6 +10,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.util.Vector;
 
 @RequiredArgsConstructor
 final class Portal {
@@ -69,12 +70,14 @@ final class Portal {
         //     // TODO
         // }
         entity.teleport(dest);
+        entity.setVelocity(new Vector(0.0, 0.0, 0.0));
+        entity.setFallDistance(0.0f);
         if (entity instanceof Player) {
-            plugin.getLogger()
-                .info(String
-                      .format("Portal teleport %s to %s %.02f %.02f %.02f",
-                              entity.getName(), dest.getWorld().getName(),
-                              dest.getX(), dest.getY(), dest.getZ()));
+            String msg = String
+                .format("Portal teleport %s to %s %.02f %.02f %.02f",
+                        entity.getName(), dest.getWorld().getName(),
+                        dest.getX(), dest.getY(), dest.getZ());
+            plugin.getLogger().info(msg);
         }
     }
 
