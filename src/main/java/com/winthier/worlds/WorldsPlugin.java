@@ -2,6 +2,7 @@ package com.winthier.worlds;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.bukkit.GameMode;
 import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
@@ -51,11 +52,13 @@ public final class WorldsPlugin extends JavaPlugin {
                         int total = 0;
                         int sleep = 0;
                         for (Player player: world.getPlayers()) {
+                            if (player.getGameMode() == GameMode.SPECTATOR) continue;
+                            if (player.isSleepingIgnored()) continue;
                             total += 1;
                             if (player.isSleeping()) sleep += 1;
                         }
                         if (sleep > 0) {
-                            long skip = (long)((20 * sleep) / total);
+                            long skip = (long) ((20 * sleep) / total);
                             if (skip > 1) {
                                 world.setTime(time + skip - 1);
                             }
