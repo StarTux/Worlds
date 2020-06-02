@@ -40,10 +40,10 @@ final class PortalListener implements Listener {
         } else {
             return;
         }
-        if (myWorld.applyPortalTravel(player, from, portalType)) {
-            event.setCancelled(true);
-            player.setPortalCooldown(200);
-        }
+        boolean r = myWorld.applyPortalTravel(player, from, portalType, (loc) -> {
+                event.setTo(loc);
+            });
+        if (r) event.setCancelled(true);
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
@@ -66,10 +66,10 @@ final class PortalListener implements Listener {
             }
         }
         if (portalType == null) return;
-        if (myWorld.applyPortalTravel(entity, from, portalType)) {
-            event.setCancelled(true);
-            entity.setPortalCooldown(200);
-        }
+        boolean r = myWorld.applyPortalTravel(entity, from, portalType, (loc) -> {
+                event.setTo(loc);
+            });
+        if (r) event.setCancelled(true);
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)

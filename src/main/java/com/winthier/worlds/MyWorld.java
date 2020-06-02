@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
@@ -254,20 +255,20 @@ final class MyWorld {
      * Return true if event shall be cancelled because we take over,
      * false wise.
      */
-    boolean applyPortalTravel(Entity entity, Location from, PortalType portalType) {
+    boolean applyPortalTravel(Entity entity, Location from, PortalType portalType, Consumer<Location> cons) {
         if (portalType == PortalType.NETHER) {
             if (netherPortal == null) return false;
             if (netherPortal.cancel) {
                 return true;
             } else {
-                return netherPortal.apply(entity, from);
+                return netherPortal.apply(entity, from, cons);
             }
         } else if (portalType == PortalType.ENDER) {
             if (endPortal == null) return false;
             if (endPortal.cancel) {
                 return true;
             } else {
-                return endPortal.apply(entity, from);
+                return endPortal.apply(entity, from, cons);
             }
         } else {
             return false;

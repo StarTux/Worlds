@@ -1,5 +1,6 @@
 package com.winthier.worlds;
 
+import java.util.function.Consumer;
 import lombok.RequiredArgsConstructor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -30,9 +31,9 @@ final class Portal {
      * Return true if the event shall be cancelled because we take
      * over, false otherwise.
      */
-    boolean apply(Entity entity, Location from) {
-        if (entity.hasMetadata(META_PORTING)) return true;
-        if (destination == null || destination.isEmpty()) return false;
+    boolean apply(Entity entity, Location from, Consumer<Location> cons) {
+        //if (entity.hasMetadata(META_PORTING)) return true;
+        if (destination == null || destination.isEmpty()) return true;
         World world = plugin.getServer().getWorld(destination);
         if (world == null) {
             if (!warned) {
@@ -53,25 +54,22 @@ final class Portal {
                               from.getZ() * ratio,
                               from.getYaw(), from.getPitch());
         }
-        entity.setMetadata(META_PORTING, new FixedMetadataValue(plugin, true));
-        world.getChunkAtAsync(to, (c) -> targetChunkLoaded(to, entity));
-        return true;
+        //entity.setMetadata(META_PORTING, new FixedMetadataValue(plugin, true));
+        //world.getChunkAtAsync(to, (c) -> targetChunkLoaded(to, entity));
+        return targetChunkLoaded(to, entity, cons);
     }
 
-    /**
-     * Callback fo apply().
-     */
-    void targetChunkLoaded(Location loc, Entity entity) {
-        if (!entity.isValid()) return;
-        entity.removeMetadata(META_PORTING, plugin);
+    boolean targetChunkLoaded(Location loc, Entity entity, Consumer<Location> cons) {
+        if (!entity.isValid()) return true;
+        //entity.removeMetadata(META_PORTING, plugin);
         Location dest = toWorldSpawn ? loc : findDestination(loc);
-        if (dest == null) return;
+        if (dest == null) return true;
         // if (createPortal) {
         //     // TODO
         // }
-        entity.teleport(dest);
-        entity.setVelocity(new Vector(0.0, 0.0, 0.0));
-        entity.setFallDistance(0.0f);
+        // entity.setVelocity(new Vector(0.0, 0.0, 0.0));
+        // entity.setFallDistance(0.0f);
+        cons.accept(dest);
         if (entity instanceof Player) {
             String msg = String
                 .format("Portal teleport %s to %s %.02f %.02f %.02f",
@@ -79,6 +77,7 @@ final class Portal {
                         dest.getX(), dest.getY(), dest.getZ());
             plugin.getLogger().info(msg);
         }
+        return false;
     }
 
     class SearchResult {
