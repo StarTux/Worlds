@@ -54,9 +54,11 @@ final class Portal {
                               from.getZ() * ratio,
                               from.getYaw(), from.getPitch());
         }
+        cons.accept(to);
+        return false;
         //entity.setMetadata(META_PORTING, new FixedMetadataValue(plugin, true));
         //world.getChunkAtAsync(to, (c) -> targetChunkLoaded(to, entity));
-        return targetChunkLoaded(to, entity, cons);
+        //return targetChunkLoaded(to, entity, cons);
     }
 
     boolean targetChunkLoaded(Location loc, Entity entity, Consumer<Location> cons) {

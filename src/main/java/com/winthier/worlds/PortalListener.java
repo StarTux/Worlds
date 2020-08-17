@@ -6,6 +6,7 @@ import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.PortalType;
+import org.bukkit.World;
 import org.bukkit.WorldBorder;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -42,8 +43,14 @@ final class PortalListener implements Listener {
         }
         boolean r = myWorld.applyPortalTravel(player, from, portalType, (loc) -> {
                 event.setTo(loc);
+                String msg = String
+                .format("Portal teleport %s from %s:%.02f,%.02f,%.02f to %s:%.02f,%.02f,%.02f",
+                        player.getName(),
+                        from.getWorld().getName(), from.getX(), from.getY(), from.getZ(),
+                        loc.getWorld().getName(), loc.getX(), loc.getY(), loc.getZ());
+                plugin.getLogger().info(msg);
             });
-        if (r) event.setCancelled(true);
+        //if (r) event.setCancelled(true);
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
@@ -74,6 +81,16 @@ final class PortalListener implements Listener {
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
     public void onPlayerTeleport(PlayerTeleportEvent event) {
+        if (event.getCause() == PlayerTeleportEvent.TeleportCause.NETHER_PORTAL
+            && event.getTo().getWorld().getEnvironment() == World.Environment.NETHER) {
+            Location loc = event.getTo();
+            String msg = String
+                .format("Portal teleport %s to %s:%.02f,%.02f,%.02f",
+                        event.getPlayer().getName(),
+                        loc.getWorld().getName(), loc.getX(), loc.getY(), loc.getZ());
+            plugin.getLogger().info(msg);
+            event.setTo(loc.add(0, 3, 0));
+        }
         if (event.getPlayer().isOp()) return;
         WorldBorder border = event.getTo().getWorld().getWorldBorder();
         Location center = border.getCenter();
