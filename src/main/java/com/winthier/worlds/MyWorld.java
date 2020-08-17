@@ -34,14 +34,16 @@ final class MyWorld {
     private boolean autoLoad;
     private WorldType worldType;
     private World.Environment environment;
-    private String generator, generatorSettings;
+    private String generator;
+    private String generatorSettings;
     private boolean generateStructures;
     private Long seed;
     private Map<String, String> gameRules = null;
     private Settings settings = null;
     private MyLocation spawnLocation = null;
     private Border border = null;
-    private Portal netherPortal, endPortal;
+    private Portal netherPortal;
+    private Portal endPortal;
     private RushNight rushNight = null;
     private GameMode gameMode = null;
     private String copyTime;
@@ -385,8 +387,11 @@ final class MyWorld {
 
     @Value
     static class MyLocation {
-        private double x, y, z;
-        private float pitch, yaw;
+        private double x;
+        private double y;
+        private double z;
+        private float pitch;
+        private float yaw;
 
         static MyLocation of(Location loc) {
             return new MyLocation(loc.getX(), loc.getY(), loc.getZ(), loc.getPitch(), loc.getYaw());
@@ -419,7 +424,8 @@ final class MyWorld {
     }
 
     static class Border {
-        private double centerX, centerZ;
+        private double centerX;
+        private double centerZ;
         private double size;
         private double damageAmount;
         private double damageBuffer;

@@ -15,7 +15,7 @@ final class WTPCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String alias, String[] args) {
-        final Player player = sender instanceof Player ? (Player)sender : null;
+        final Player player = sender instanceof Player ? (Player) sender : null;
         Player target;
         String name;
         if (args.length == 1) {
@@ -34,7 +34,7 @@ final class WTPCommand implements CommandExecutor {
             name = args[1];
         } else {
             return false;
-        }   
+        }
         MyWorld myWorld = plugin.worldByName(name);
         Location loc = null;
         if (myWorld != null) {

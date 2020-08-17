@@ -17,7 +17,7 @@ final class WorldsCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String alias, String[] args) {
-        final Player player = sender instanceof Player ? (Player)sender : null;
+        final Player player = sender instanceof Player ? (Player) sender : null;
         String cmd = args.length > 0 ? args[0].toLowerCase() : null;
         if (cmd == null) {
             return false;
