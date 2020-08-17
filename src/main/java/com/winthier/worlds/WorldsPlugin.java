@@ -102,18 +102,22 @@ public final class WorldsPlugin extends JavaPlugin {
     }
 
     void loadAllWorlds() {
-        for (MyWorld myWorld: getWorlds()) {
+        for (MyWorld myWorld : getWorlds()) {
             World world = myWorld.loadWorld();
             if (world != null) getLogger().info("Loaded world " + world.getName());
         }
     }
 
-    MyWorld worldByName(String name) {
-        for (MyWorld myWorld: getWorlds()) {
+    public MyWorld worldByName(String name) {
+        for (MyWorld myWorld : getWorlds()) {
             if (name.equals(myWorld.getName())) {
                 return myWorld;
             }
         }
         return null;
+    }
+
+    public MyWorld worldOf(World world) {
+        return worldByName(world.getName());
     }
 }

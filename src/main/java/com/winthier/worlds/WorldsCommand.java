@@ -88,7 +88,8 @@ final class WorldsCommand implements CommandExecutor {
             if (name.equals("*")) {
                 int count = 0;
                 for (World world: plugin.getServer().getWorlds()) {
-                    MyWorld myWorld = new MyWorld(plugin, world.getName());
+                    MyWorld myWorld = plugin.worldOf(world);
+                    if (myWorld == null) myWorld = new MyWorld(plugin, name);
                     myWorld.configure(world);
                     myWorld.save();
                     count += 1;
@@ -102,7 +103,8 @@ final class WorldsCommand implements CommandExecutor {
                     return true;
                 }
                 name = world.getName();
-                MyWorld myWorld = new MyWorld(plugin, name);
+                MyWorld myWorld = plugin.worldOf(world);
+                if (myWorld == null) myWorld = new MyWorld(plugin, name);
                 myWorld.configure(world);
                 myWorld.save();
                 plugin.saveConfig();
