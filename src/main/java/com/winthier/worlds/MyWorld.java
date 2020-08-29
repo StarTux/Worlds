@@ -11,11 +11,14 @@ import lombok.Value;
 import org.bukkit.Difficulty;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.PortalType;
 import org.bukkit.World;
 import org.bukkit.WorldBorder;
 import org.bukkit.WorldCreator;
 import org.bukkit.WorldType;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 
@@ -44,6 +47,7 @@ final class MyWorld {
     private Border border = null;
     private Portal netherPortal;
     private Portal endPortal;
+    private Portal cryingPortal;
     private RushNight rushNight = null;
     private GameMode gameMode = null;
     private String copyTime;
@@ -110,6 +114,11 @@ final class MyWorld {
             if (portalSection != null) {
                 endPortal = new Portal(plugin, this, PortalType.ENDER);
                 endPortal.configure(portalSection);
+            }
+            portalSection = section.getConfigurationSection("Crying");
+            if (portalSection != null) {
+                cryingPortal = new Portal(plugin, this, PortalType.NETHER);
+                cryingPortal.configure(portalSection);
             }
         }
         final String rushNightString = config.getString("RushNight");
@@ -187,6 +196,11 @@ final class MyWorld {
             if (section == null) section = config.createSection("Portal.End");
             endPortal.save(section);
         }
+        if (cryingPortal != null) {
+            ConfigurationSection section = config.getConfigurationSection("Portal.Crying");
+            if (section == null) section = config.createSection("Portal.Crying");
+            cryingPortal.save(section);
+        }
         if (rushNight != null) config.set("RushNight", rushNight.name());
         if (gameMode != null) config.set("GameMode", gameMode.name());
         if (copyTime != null) config.set("CopyTime", copyTime);
@@ -254,16 +268,49 @@ final class MyWorld {
     }
 
     /**
+     * Find the portal frame belonging to the entity location.  We
+     * assume the entity is in the portal frame block or right next to
+     * it; the rest is guesswork.
+     * @param the location of an entity that's traveling through a nether portal.
+     * @return the frame block right below, or null if none was found
+     */
+    private Block findFrame(Location from) {
+        Block block = from.getBlock();
+        if (block.getType() != Material.NETHER_PORTAL) {
+            for (BlockFace face : Arrays.asList(BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST)) {
+                Block rel = block.getRelative(face);
+                if (rel.getType() == Material.NETHER_PORTAL) {
+                    block = rel;
+                    break;
+                }
+            }
+        }
+        if (block.getType() != Material.NETHER_PORTAL) return null;
+        while (block.getType() == Material.NETHER_PORTAL) block = block.getRelative(BlockFace.DOWN);
+        return block;
+    }
+
+    /**
      * Return true if event shall be cancelled because we take over,
      * false wise.
      */
     boolean applyPortalTravel(Entity entity, Location from, PortalType portalType, Consumer<Location> cons) {
         if (portalType == PortalType.NETHER) {
-            if (netherPortal == null) return false;
-            if (netherPortal.cancel) {
-                return true;
+            Block frame = findFrame(from);
+            if (frame != null && frame.getType() == Material.CRYING_OBSIDIAN) {
+                if (cryingPortal == null) return false;
+                if (cryingPortal.cancel) {
+                    return true;
+                } else {
+                    return cryingPortal.apply(entity, from, cons);
+                }
             } else {
-                return netherPortal.apply(entity, from, cons);
+                if (netherPortal == null) return false;
+                if (netherPortal.cancel) {
+                    return true;
+                } else {
+                    return netherPortal.apply(entity, from, cons);
+                }
             }
         } else if (portalType == PortalType.ENDER) {
             if (endPortal == null) return false;
