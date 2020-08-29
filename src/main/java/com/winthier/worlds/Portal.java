@@ -29,9 +29,9 @@ final class Portal {
      * Return true if the event shall be cancelled because we take
      * over, false otherwise.
      */
-    boolean apply(Entity entity, Location from, Consumer<Location> cons) {
+    public Location apply(Entity entity, Location from) {
         //if (entity.hasMetadata(META_PORTING)) return true;
-        if (destination == null || destination.isEmpty()) return true;
+        if (destination == null || destination.isEmpty()) return null;
         World world = plugin.getServer().getWorld(destination);
         if (world == null) {
             if (!warned) {
@@ -40,7 +40,7 @@ final class Portal {
                              + destination);
                 warned = true;
             }
-            return true;
+            return null;
         }
         Location to;
         if (toWorldSpawn) {
@@ -52,8 +52,7 @@ final class Portal {
                               from.getZ() * ratio,
                               from.getYaw(), from.getPitch());
         }
-        cons.accept(to);
-        return false;
+        return to;
         //entity.setMetadata(META_PORTING, new FixedMetadataValue(plugin, true));
         //world.getChunkAtAsync(to, (c) -> targetChunkLoaded(to, entity));
         //return targetChunkLoaded(to, entity, cons);

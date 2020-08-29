@@ -2,6 +2,7 @@ package com.winthier.worlds;
 
 import java.util.Arrays;
 import lombok.RequiredArgsConstructor;
+import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -41,16 +42,24 @@ final class PortalListener implements Listener {
         } else {
             return;
         }
-        boolean r = myWorld.applyPortalTravel(player, from, portalType, (loc) -> {
-                event.setTo(loc);
-                String msg = String
-                .format("Portal teleport %s from %s:%.02f,%.02f,%.02f to %s:%.02f,%.02f,%.02f",
-                        player.getName(),
-                        from.getWorld().getName(), from.getX(), from.getY(), from.getZ(),
-                        loc.getWorld().getName(), loc.getX(), loc.getY(), loc.getZ());
-                plugin.getLogger().info(msg);
-            });
-        //if (r) event.setCancelled(true);
+        Portal portal = myWorld.applyPortalTravel(player, from, portalType);
+        if (portal == null) return;
+        Location to = portal.apply(player, from);
+        if (portal.cancel) {
+            event.setCancelled(true);
+            if (to != null) {
+                Bukkit.getScheduler().runTask(plugin, () -> player.teleport(to, event.getCause()));
+            }
+        } else {
+            if (to != null) {
+                event.setTo(to);
+            } else {
+                event.setCancelled(true);
+            }
+        }
+        event.setSearchRadius(portal.searchRadius);
+        event.setCanCreatePortal(portal.createPortal);
+        event.setCreationRadius(portal.searchRadius);
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
@@ -73,23 +82,38 @@ final class PortalListener implements Listener {
             }
         }
         if (portalType == null) return;
-        boolean r = myWorld.applyPortalTravel(entity, from, portalType, (loc) -> {
-                event.setTo(loc);
-            });
-        if (r) event.setCancelled(true);
+        Portal portal = myWorld.applyPortalTravel(entity, from, portalType);
+        if (portal == null) return;
+        Location to = portal.apply(entity, from);
+        if (portal.cancel) {
+            event.setCancelled(true);
+            if (to != null) {
+                Bukkit.getScheduler().runTask(plugin, () -> entity.teleport(to));
+            }
+        } else {
+            if (to != null) {
+                event.setTo(to);
+            } else {
+                event.setCancelled(true);
+            }
+        }
+        event.setSearchRadius(portal.searchRadius);
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
     public void onPlayerTeleport(PlayerTeleportEvent event) {
-        if (event.getCause() == PlayerTeleportEvent.TeleportCause.NETHER_PORTAL
-            && event.getTo().getWorld().getEnvironment() == World.Environment.NETHER) {
-            Location loc = event.getTo();
-            String msg = String
-                .format("Portal teleport %s to %s:%.02f,%.02f,%.02f",
-                        event.getPlayer().getName(),
-                        loc.getWorld().getName(), loc.getX(), loc.getY(), loc.getZ());
-            plugin.getLogger().info(msg);
-            event.setTo(loc.add(0, 3, 0));
+        Location to = event.getTo();
+        if (event.getCause() == PlayerTeleportEvent.TeleportCause.NETHER_PORTAL && to.getWorld().getEnvironment() == World.Environment.NETHER) {
+            Block block = to.getBlock();
+            Block above = block.getRelative(0, 3, 0);
+            if (block.getType() != Material.NETHER_PORTAL && above.getType() == Material.NETHER_PORTAL) {
+                String msg = String
+                    .format("Portal teleport %s to %s:%.02f,%.02f,%.02f",
+                            event.getPlayer().getName(),
+                            to.getWorld().getName(), to.getX(), to.getY(), to.getZ());
+                plugin.getLogger().info(msg);
+                event.setTo(above.getLocation().add(0.5, 0.0, 0.5));
+            }
         }
         if (event.getPlayer().isOp()) return;
         WorldBorder border = event.getTo().getWorld().getWorldBorder();

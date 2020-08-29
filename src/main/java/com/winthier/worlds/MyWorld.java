@@ -294,33 +294,18 @@ final class MyWorld {
      * Return true if event shall be cancelled because we take over,
      * false wise.
      */
-    boolean applyPortalTravel(Entity entity, Location from, PortalType portalType, Consumer<Location> cons) {
+    public Portal applyPortalTravel(Entity entity, Location from, PortalType portalType) {
         if (portalType == PortalType.NETHER) {
             Block frame = findFrame(from);
             if (frame != null && frame.getType() == Material.CRYING_OBSIDIAN) {
-                if (cryingPortal == null) return false;
-                if (cryingPortal.cancel) {
-                    return true;
-                } else {
-                    return cryingPortal.apply(entity, from, cons);
-                }
+                return cryingPortal;
             } else {
-                if (netherPortal == null) return false;
-                if (netherPortal.cancel) {
-                    return true;
-                } else {
-                    return netherPortal.apply(entity, from, cons);
-                }
+                return netherPortal;
             }
         } else if (portalType == PortalType.ENDER) {
-            if (endPortal == null) return false;
-            if (endPortal.cancel) {
-                return true;
-            } else {
-                return endPortal.apply(entity, from, cons);
-            }
+            return endPortal;
         } else {
-            return false;
+            return null;
         }
     }
 
