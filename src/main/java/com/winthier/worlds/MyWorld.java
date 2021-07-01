@@ -328,6 +328,7 @@ final class MyWorld {
         private Difficulty difficulty;
         private Boolean keepSpawnInMemory;
         private Boolean pvp;
+        private Integer viewDistance;
         //   Mob Spawning
         //     Allow
         private Boolean allowMonsters;
@@ -346,34 +347,69 @@ final class MyWorld {
         private Long ticksPerWaterSpawns;
 
         void configure(ConfigurationSection config) {
-            autoSave = config.getBoolean("AutoSave", true);
-            try {
-                difficulty = Difficulty.valueOf(config.getString("Difficulty", "NORMAL"));
-            } catch (IllegalArgumentException iae) {
-                iae.printStackTrace();
+            if (config.isSet("AutoSave")) {
+                autoSave = config.getBoolean("AutoSave");
             }
-            keepSpawnInMemory = config.getBoolean("KeepSpawnInMemory");
-            pvp = config.getBoolean("PvP");
+            if (config.isSet("Difficulty")) {
+                try {
+                    difficulty = Difficulty.valueOf(config.getString("Difficulty"));
+                } catch (IllegalArgumentException iae) {
+                    iae.printStackTrace();
+                }
+            }
+            if (config.isSet("KeepSpawnInMemory")) {
+                keepSpawnInMemory = config.getBoolean("KeepSpawnInMemory");
+            }
+            if (config.isSet("PvP")) {
+                pvp = config.getBoolean("PvP");
+            }
+            if (config.isSet("ViewDistance")) {
+                viewDistance = config.getInt("ViewDistance");
+            }
             ConfigurationSection section = config.getConfigurationSection("AllowSpawns");
             if (section != null) {
-                allowMonsters = section.getBoolean("Monster", true);
-                allowAnimals = section.getBoolean("Animal", true);
+                if (section.isSet("Monster")) {
+                    allowMonsters = section.getBoolean("Monster");
+                }
+                if (section.isSet("Animal")) {
+                    allowAnimals = section.getBoolean("Animal");
+                }
             }
             section = config.getConfigurationSection("SpawnLimits");
             if (section != null) {
-                ambientSpawnLimit = section.getInt("Ambient");
-                animalSpawnLimit = section.getInt("Animal");
-                monsterSpawnLimit = section.getInt("Monster");
-                waterAmbientSpawnLimit = section.getInt("WaterAmbient");
-                waterAnimalSpawnLimit = section.getInt("WaterAnimal");
+                if (section.isSet("Ambient")) {
+                    ambientSpawnLimit = section.getInt("Ambient");
+                }
+                if (section.isSet("Animal")) {
+                    animalSpawnLimit = section.getInt("Animal");
+                }
+                if (section.isSet("Monster")) {
+                    monsterSpawnLimit = section.getInt("Monster");
+                }
+                if (section.isSet("WaterAmbient")) {
+                    waterAmbientSpawnLimit = section.getInt("WaterAmbient");
+                }
+                if (section.isSet("WaterAnimal")) {
+                    waterAnimalSpawnLimit = section.getInt("WaterAnimal");
+                }
             }
             section = config.getConfigurationSection("TicksPer");
             if (section != null) {
-                ticksPerAmbientSpawns = section.getLong("AmbientSpawn");
-                ticksPerAnimalSpawns = section.getLong("AnimalSpawn");
-                ticksPerMonsterSpawns = section.getLong("MonsterSpawn");
-                ticksPerWaterAmbientSpawns = section.getLong("WaterAmbient");
-                ticksPerWaterSpawns = section.getLong("WaterSpawn");
+                if (section.isSet("AmbientSpawn")) {
+                    ticksPerAmbientSpawns = section.getLong("AmbientSpawn");
+                }
+                if (section.isSet("AnimalSpawn")) {
+                    ticksPerAnimalSpawns = section.getLong("AnimalSpawn");
+                }
+                if (section.isSet("MonsterSpawn")) {
+                    ticksPerMonsterSpawns = section.getLong("MonsterSpawn");
+                }
+                if (section.isSet("WaterAmbient")) {
+                    ticksPerWaterAmbientSpawns = section.getLong("WaterAmbient");
+                }
+                if (section.isSet("WaterSpawn")) {
+                    ticksPerWaterSpawns = section.getLong("WaterSpawn");
+                }
             }
         }
 
@@ -382,6 +418,7 @@ final class MyWorld {
             config.set("Difficulty", difficulty.name());
             config.set("KeepSpawnInMemory", keepSpawnInMemory);
             config.set("PvP", pvp);
+            config.set("ViewDistance", viewDistance);
             config.set("AllowSpawns.Monster", allowMonsters);
             config.set("AllowSpawns.Animal", allowAnimals);
             // SpawnLimits
@@ -403,6 +440,7 @@ final class MyWorld {
             difficulty = world.getDifficulty();
             keepSpawnInMemory = world.getKeepSpawnInMemory();
             pvp = world.getPVP();
+            viewDistance = world.getViewDistance();
             allowMonsters = world.getAllowMonsters();
             allowAnimals = world.getAllowAnimals();
             // SpawnLimits
@@ -424,6 +462,7 @@ final class MyWorld {
             if (difficulty != null) world.setDifficulty(difficulty);
             if (keepSpawnInMemory != null) world.setKeepSpawnInMemory(keepSpawnInMemory);
             if (pvp != null) world.setPVP(pvp);
+            if (viewDistance != null) world.setViewDistance(viewDistance);
             if (allowMonsters != null && allowAnimals != null) {
                 world.setSpawnFlags(allowMonsters, allowAnimals);
             }
