@@ -133,7 +133,7 @@ final class MyWorld {
         }
         final String gameModeString = config.getString("GameMode");
         if (gameModeString == null) {
-            this.gameMode = GameMode.SURVIVAL;
+            this.gameMode = null;
         } else {
             try {
                 this.gameMode = GameMode.valueOf(gameModeString.toUpperCase());
