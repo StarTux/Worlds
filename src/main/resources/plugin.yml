@@ -1,12 +1,17 @@
+main: com.winthier.worlds.WorldsPlugin
 name: Worlds
+
+version: 0.1
+api-version: 1.17
+
 description: Simple world loading plugin
 author: StarTux
-version: 0.1
-api-version: 1.13
-main: com.winthier.worlds.WorldsPlugin
+
 depend: []
 loadbefore: [ Custom, AdviceAnimals ]
+
 commands:
+
   worlds:
     aliases: [ world ]
     description: Admin interface
@@ -21,12 +26,14 @@ commands:
       /world setspawn - Set world spawn
       /world load <world> [environment] - Load world
       /world unload <world> - Unload Bukkit world
+
   wtp:
     description: World teleport
     usage: |-
       /wtp <world> - Teleport to world.
       /wtp <player> <world> - Teleport player to world.
     permission: worlds.wtp
+
 permissions:
   worlds.worlds:
     default: op
