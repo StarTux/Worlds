@@ -12,6 +12,7 @@ import org.bukkit.WorldBorder;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -82,6 +83,10 @@ final class PortalListener implements Listener {
             }
         }
         if (portalType == null) return;
+        if (portalType == PortalType.ENDER && entity instanceof FallingBlock) {
+            // Quick fix: Falling blocks end up in public locations.
+            event.setCancelled(true);
+        }
         Portal portal = myWorld.applyPortalTravel(entity, from, portalType);
         if (portal == null) return;
         Location to = portal.apply(entity, from);
