@@ -1,16 +1,20 @@
 package com.winthier.worlds;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 
 @RequiredArgsConstructor
-final class WTPCommand implements CommandExecutor {
+final class WTPCommand implements TabExecutor {
     final WorldsPlugin plugin;
 
     @Override
@@ -51,5 +55,14 @@ final class WTPCommand implements CommandExecutor {
         sender.sendMessage(ChatColor.YELLOW + "Teleported " + target.getName()
                            + " to spawn location of world " + name);
         return true;
+    }
+
+    @Override
+    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
+        if (args.length != 1) return Collections.emptyList();
+        return Bukkit.getWorlds().stream()
+            .map(World::getName)
+            .filter(s -> s.contains(args[0]))
+            .collect(Collectors.toList());
     }
 }
