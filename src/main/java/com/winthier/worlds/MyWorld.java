@@ -339,12 +339,14 @@ final class MyWorld {
         private Integer monsterSpawnLimit;
         private Integer waterAmbientSpawnLimit;
         private Integer waterAnimalSpawnLimit;
+        private Integer waterUndergroundCreatureSpawnLimit;
         //     Ticks Per
         private Long ticksPerAmbientSpawns;
         private Long ticksPerAnimalSpawns;
         private Long ticksPerMonsterSpawns;
         private Long ticksPerWaterAmbientSpawns;
         private Long ticksPerWaterSpawns;
+        private Long ticksPerWaterUndergroundCreatureSpawns;
 
         void configure(ConfigurationSection config) {
             if (config.isSet("AutoSave")) {
@@ -392,6 +394,9 @@ final class MyWorld {
                 if (section.isSet("WaterAnimal")) {
                     waterAnimalSpawnLimit = section.getInt("WaterAnimal");
                 }
+                if (section.isSet("WaterUndergroundCreature")) {
+                    waterUndergroundCreatureSpawnLimit = section.getInt("WaterUndergroundCreature");
+                }
             }
             section = config.getConfigurationSection("TicksPer");
             if (section != null) {
@@ -410,6 +415,9 @@ final class MyWorld {
                 if (section.isSet("WaterSpawn")) {
                     ticksPerWaterSpawns = section.getLong("WaterSpawn");
                 }
+                if (section.isSet("WaterUndergroundCreature")) {
+                    ticksPerWaterUndergroundCreatureSpawns = section.getLong("WaterUndergroundCreature");
+                }
             }
         }
 
@@ -427,12 +435,14 @@ final class MyWorld {
             config.set("SpawnLimits.Monster", monsterSpawnLimit);
             config.set("SpawnLimits.WaterAmbient", waterAmbientSpawnLimit);
             config.set("SpawnLimits.WaterAnimal", waterAnimalSpawnLimit);
+            config.set("SpawnLimits.WaterUndergroundCreature", waterUndergroundCreatureSpawnLimit);
             // TicksPer
             config.set("TicksPer.AmbientSpawn", ticksPerAmbientSpawns);
             config.set("TicksPer.AnimalSpawn", ticksPerAnimalSpawns);
             config.set("TicksPer.MonsterSpawn", ticksPerMonsterSpawns);
             config.set("TicksPer.WaterAmbientSpawn", ticksPerWaterAmbientSpawns);
             config.set("TicksPer.WaterSpawn", ticksPerWaterSpawns);
+            config.set("TicksPer.WaterUndergroundSpawn", ticksPerWaterUndergroundCreatureSpawns);
         }
 
         void configure(World world) {
@@ -449,12 +459,14 @@ final class MyWorld {
             monsterSpawnLimit = world.getMonsterSpawnLimit();
             waterAmbientSpawnLimit = world.getWaterAmbientSpawnLimit();
             waterAnimalSpawnLimit = world.getWaterAnimalSpawnLimit();
+            waterUndergroundCreatureSpawnLimit = world.getWaterUndergroundCreatureSpawnLimit();
             // TicksPer
             ticksPerAmbientSpawns = world.getTicksPerAmbientSpawns();
             ticksPerAnimalSpawns = world.getTicksPerAnimalSpawns();
             ticksPerMonsterSpawns = world.getTicksPerMonsterSpawns();
             ticksPerWaterAmbientSpawns = world.getTicksPerWaterAmbientSpawns();
             ticksPerWaterSpawns = world.getTicksPerWaterSpawns();
+            ticksPerWaterUndergroundCreatureSpawns = world.getTicksPerWaterUndergroundCreatureSpawns();
         }
 
         void apply(World world) {
@@ -472,12 +484,18 @@ final class MyWorld {
             if (monsterSpawnLimit != null) world.setMonsterSpawnLimit(monsterSpawnLimit);
             if (waterAmbientSpawnLimit != null) world.setWaterAmbientSpawnLimit(waterAmbientSpawnLimit);
             if (waterAnimalSpawnLimit != null) world.setWaterAnimalSpawnLimit(waterAnimalSpawnLimit);
+            if (waterUndergroundCreatureSpawnLimit != null) {
+                world.setWaterUndergroundCreatureSpawnLimit(waterUndergroundCreatureSpawnLimit);
+            }
             // TicksPer
             if (ticksPerAmbientSpawns != null) world.setTicksPerAmbientSpawns(ticksPerAmbientSpawns.intValue());
             if (ticksPerAnimalSpawns != null) world.setTicksPerAnimalSpawns(ticksPerAnimalSpawns.intValue());
             if (ticksPerMonsterSpawns != null) world.setTicksPerMonsterSpawns(ticksPerMonsterSpawns.intValue());
             if (ticksPerWaterAmbientSpawns != null) world.setTicksPerWaterAmbientSpawns(ticksPerWaterAmbientSpawns.intValue());
             if (ticksPerWaterSpawns != null) world.setTicksPerWaterSpawns(ticksPerWaterSpawns.intValue());
+            if (ticksPerWaterUndergroundCreatureSpawns != null) {
+                world.setTicksPerWaterUndergroundCreatureSpawns(ticksPerWaterUndergroundCreatureSpawns.intValue());
+            }
         }
     }
 
