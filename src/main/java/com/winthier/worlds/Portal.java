@@ -64,7 +64,6 @@ final class Portal {
         Location dest = toWorldSpawn ? loc : findDestination(loc);
         if (dest == null) return true;
         // if (createPortal) {
-        //     // TODO
         // }
         // entity.setVelocity(new Vector(0.0, 0.0, 0.0));
         // entity.setFallDistance(0.0f);

@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.bukkit.Difficulty;
 import org.bukkit.GameMode;
+import org.bukkit.GameRule;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.PortalType;
@@ -20,6 +21,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
+import org.bukkit.util.NumberConversions;
 
 /**
  * This is a simple wrapper for a world section in the
@@ -29,7 +31,7 @@ import org.bukkit.entity.Entity;
  */
 @RequiredArgsConstructor
 @Getter
-final class MyWorld {
+public final class MyWorld {
     private final WorldsPlugin plugin;
     // World Creator Settings
     private final String name;
@@ -40,7 +42,7 @@ final class MyWorld {
     private String generatorSettings;
     private boolean generateStructures;
     private Long seed;
-    private Map<String, String> gameRules = null;
+    private Map<GameRule<?>, Object> gameRules = null;
     private Settings settings = null;
     private MyLocation spawnLocation = null;
     private Border border = null;
@@ -56,7 +58,7 @@ final class MyWorld {
         NEVER, SLEEP, ALWAYS;
     }
 
-    void configure(ConfigurationSection config) {
+    public void configure(ConfigurationSection config) {
         autoLoad = config.getBoolean("AutoLoad", false);
         // World Creator
         try {
@@ -84,7 +86,12 @@ final class MyWorld {
         if (section != null) {
             if (gameRules == null) gameRules = new HashMap<>();
             for (String key: section.getKeys(false)) {
-                gameRules.put(key, section.getString(key));
+                GameRule gameRule = GameRule.getByName(key);
+                if (gameRule == null) {
+                    plugin.getLogger().warning(name + ": Unknown GameRule: " + key);
+                    continue;
+                }
+                gameRules.put(gameRule, section.getString(key));
             }
         }
         section = config.getConfigurationSection("Settings");
@@ -153,7 +160,7 @@ final class MyWorld {
      * it is intended for admins to edit the config.yml, then use
      * reload to apply the changes.
      */
-    void save() {
+    public void save() {
         ConfigurationSection config = plugin.getConfig().getConfigurationSection("worlds").getConfigurationSection(name);
         if (config == null) config = plugin.getConfig().getConfigurationSection("worlds").createSection(name);
         config.set("AutoLoad", autoLoad);
@@ -166,8 +173,8 @@ final class MyWorld {
         if (gameRules != null) {
             ConfigurationSection section = config.getConfigurationSection("GameRules");
             if (section == null) section = config.createSection("GameRules");
-            for (Map.Entry<String, String> entry: gameRules.entrySet()) {
-                section.set(entry.getKey(), entry.getValue());
+            for (Map.Entry<GameRule<?>, Object> entry : gameRules.entrySet()) {
+                section.set(entry.getKey().getName(), entry.getValue());
             }
         }
         if (settings != null) {
@@ -206,14 +213,15 @@ final class MyWorld {
         if (fullTime != null) config.set("FullTime", fullTime);
     }
 
-    void configure(World world) {
-        worldType = world.getWorldType();
+    public void configure(World world) {
+        // WorldType removed because Bukkit says it's @Deprecated
         environment = world.getEnvironment();
         // Generator name has no getter...
         seed = world.getSeed();
-        for (String key: world.getGameRules()) {
-            if (gameRules == null) gameRules = new HashMap<>();
-            gameRules.put(key, world.getGameRuleValue(key));
+        if (gameRules == null) gameRules = new HashMap<>();
+        for (GameRule<?> gameRule : GameRule.values()) {
+            Object value = world.getGameRuleValue(gameRule);
+            gameRules.put(gameRule, value);
         }
         settings = new Settings();
         settings.configure(world);
@@ -222,7 +230,7 @@ final class MyWorld {
         border.configure(world);
     }
 
-    WorldCreator getWorldCreator() {
+    protected WorldCreator getWorldCreator() {
         WorldCreator creator = WorldCreator.name(name);
         creator.type(worldType);
         creator.environment(environment);
@@ -237,11 +245,11 @@ final class MyWorld {
         return creator;
     }
 
-    World getWorld() {
+    public World getWorld() {
         return plugin.getServer().getWorld(name);
     }
 
-    World loadWorld() {
+    public World loadWorld() {
         World world = getWorld();
         if (world == null && autoLoad) {
             WorldCreator creator = getWorldCreator();
@@ -251,12 +259,30 @@ final class MyWorld {
         return world;
     }
 
-    void apply(World world) {
+    private static boolean toBoolean(Object in, boolean dfl) {
+        if (in instanceof Boolean) {
+            return (Boolean) in;
+        }
+        try {
+            return Boolean.parseBoolean(in.toString());
+        } catch (IllegalArgumentException iae) { }
+        return dfl;
+    }
+
+    public void apply(World world) {
         if (gameRules != null) {
-            for (Map.Entry<String, String> entry: gameRules.entrySet()) {
-                boolean ret = world.setGameRuleValue(entry.getKey(), entry.getValue());
-                if (!ret) {
-                    plugin.getLogger().warning("Failed to set GameRule '" + entry.getKey() + "' to '" + entry.getValue() + "' in world '" + name + "'");
+            for (Map.Entry<GameRule<?>, Object> entry : gameRules.entrySet()) {
+                Class<?> type = entry.getKey().getType();
+                if (type == Integer.class) {
+                    @SuppressWarnings("unchecked")
+                    GameRule<Integer> gameRule = (GameRule<Integer>) entry.getKey();
+                    int value = NumberConversions.toInt(entry.getValue());
+                    world.setGameRule(gameRule, value);
+                } else if (type == Boolean.class) {
+                    @SuppressWarnings("unchecked")
+                    GameRule<Boolean> gameRule = (GameRule<Boolean>) entry.getKey();
+                    boolean value = toBoolean(entry.getValue(), world.getGameRuleDefault(gameRule));
+                    world.setGameRule(gameRule, value);
                 }
             }
         }
@@ -308,7 +334,7 @@ final class MyWorld {
         }
     }
 
-    Location getSpawnLocation() {
+    public Location getSpawnLocation() {
         World world = getWorld();
         if (world == null) return null;
         Location result = null;
@@ -317,12 +343,12 @@ final class MyWorld {
         return result;
     }
 
-    void setSpawnLocation(Location location) {
+    public void setSpawnLocation(Location location) {
         spawnLocation = MyLocation.of(location);
         spawnLocation.setSpawn(location.getWorld());
     }
 
-    static class Settings {
+    public static final class Settings {
         //   General
         private Boolean autoSave;
         private Difficulty difficulty;
@@ -348,7 +374,7 @@ final class MyWorld {
         private Long ticksPerWaterSpawns;
         private Long ticksPerWaterUndergroundCreatureSpawns;
 
-        void configure(ConfigurationSection config) {
+        protected void configure(ConfigurationSection config) {
             if (config.isSet("AutoSave")) {
                 autoSave = config.getBoolean("AutoSave");
             }
@@ -421,7 +447,7 @@ final class MyWorld {
             }
         }
 
-        void save(ConfigurationSection config) {
+        protected void save(ConfigurationSection config) {
             config.set("AutoSave", autoSave);
             config.set("Difficulty", difficulty.name());
             config.set("KeepSpawnInMemory", keepSpawnInMemory);
@@ -445,7 +471,7 @@ final class MyWorld {
             config.set("TicksPer.WaterUndergroundSpawn", ticksPerWaterUndergroundCreatureSpawns);
         }
 
-        void configure(World world) {
+        protected void configure(World world) {
             autoSave = world.isAutoSave();
             difficulty = world.getDifficulty();
             keepSpawnInMemory = world.getKeepSpawnInMemory();
@@ -469,7 +495,7 @@ final class MyWorld {
             ticksPerWaterUndergroundCreatureSpawns = world.getTicksPerWaterUndergroundCreatureSpawns();
         }
 
-        void apply(World world) {
+        protected void apply(World world) {
             if (autoSave != null) world.setAutoSave(autoSave);
             if (difficulty != null) world.setDifficulty(difficulty);
             if (keepSpawnInMemory != null) world.setKeepSpawnInMemory(keepSpawnInMemory);
@@ -500,18 +526,18 @@ final class MyWorld {
     }
 
     @Value
-    static class MyLocation {
+    public static final class MyLocation {
         private double x;
         private double y;
         private double z;
         private float pitch;
         private float yaw;
 
-        static MyLocation of(Location loc) {
+        protected static MyLocation of(Location loc) {
             return new MyLocation(loc.getX(), loc.getY(), loc.getZ(), loc.getPitch(), loc.getYaw());
         }
 
-        static MyLocation of(ConfigurationSection config) {
+        protected static MyLocation of(ConfigurationSection config) {
             double x = config.getDouble("x");
             double y = config.getDouble("y");
             double z = config.getDouble("z");
@@ -520,7 +546,7 @@ final class MyWorld {
             return new MyLocation(x, y, z, pitch, yaw);
         }
 
-        void save(ConfigurationSection config) {
+        protected void save(ConfigurationSection config) {
             config.set("x", x);
             config.set("y", y);
             config.set("z", z);
@@ -528,16 +554,16 @@ final class MyWorld {
             config.set("yaw", yaw);
         }
 
-        Location getLocation(World world) {
+        protected Location getLocation(World world) {
             return new Location(world, x, y, z, yaw, pitch);
         }
 
-        void setSpawn(World world) {
+        protected void setSpawn(World world) {
             world.setSpawnLocation((int) x, (int) y, (int) z);
         }
     }
 
-    static class Border {
+    public static final class Border {
         private double centerX;
         private double centerZ;
         private double size;
@@ -546,7 +572,7 @@ final class MyWorld {
         private int warningDistance;
         private int warningTime;
 
-        void configure(ConfigurationSection config) {
+        protected void configure(ConfigurationSection config) {
             List<Double> list = config.getDoubleList("Center");
             if (list.size() == 2) {
                 centerX = list.get(0);
@@ -559,7 +585,7 @@ final class MyWorld {
             warningTime = config.getInt("WarningTime");
         }
 
-        void save(ConfigurationSection config) {
+        protected void save(ConfigurationSection config) {
             config.set("Center", Arrays.asList(centerX, centerZ));
             config.set("Size", size);
             config.set("DamageAmount", damageAmount);
@@ -568,7 +594,7 @@ final class MyWorld {
             config.set("WarningTime", warningTime);
         }
 
-        void configure(World world) {
+        protected void configure(World world) {
             WorldBorder worldBorder = world.getWorldBorder();
             Location loc = worldBorder.getCenter();
             centerX = loc.getX();
@@ -580,7 +606,7 @@ final class MyWorld {
             warningTime = worldBorder.getWarningTime();
         }
 
-        void apply(World world) {
+        protected void apply(World world) {
             WorldBorder worldBorder = world.getWorldBorder();
             worldBorder.setCenter(centerX, centerZ);
             worldBorder.setSize(size);
