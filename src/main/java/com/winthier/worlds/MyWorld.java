@@ -164,7 +164,9 @@ public final class MyWorld {
         ConfigurationSection config = plugin.getConfig().getConfigurationSection("worlds").getConfigurationSection(name);
         if (config == null) config = plugin.getConfig().getConfigurationSection("worlds").createSection(name);
         config.set("AutoLoad", autoLoad);
-        config.set("Type", worldType.name());
+        if (worldType != null) {
+            config.set("Type", worldType.name());
+        }
         config.set("Environment", environment.name());
         config.set("Generator", generator);
         config.set("GeneratorSettings", generatorSettings);
