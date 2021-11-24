@@ -40,6 +40,7 @@ public final class MyWorld {
     private World.Environment environment;
     private String generator;
     private String generatorSettings;
+    private String biomeProvider;
     private boolean generateStructures;
     private Long seed;
     private Map<GameRule<?>, Object> gameRules = null;
@@ -73,6 +74,7 @@ public final class MyWorld {
         }
         generator = config.getString("Generator");
         generatorSettings = config.getString("GeneratorSettings");
+        biomeProvider = config.getString("BiomeProvider");
         generateStructures = config.getBoolean("GenerateStructures", true);
         String tmp = config.getString("Seed");
         if (tmp != null && !tmp.isEmpty()) {
@@ -170,6 +172,7 @@ public final class MyWorld {
         config.set("Environment", environment.name());
         config.set("Generator", generator);
         config.set("GeneratorSettings", generatorSettings);
+        config.set("BiomeProvider", biomeProvider);
         config.set("GenerateStructures", generateStructures);
         config.set("Seed", seed);
         if (gameRules != null) {
@@ -241,6 +244,7 @@ public final class MyWorld {
         if (generatorSettings != null && !generatorSettings.isEmpty()) {
             creator.generatorSettings(generatorSettings);
         }
+        creator.biomeProvider(biomeProvider);
         if (seed != null) {
             creator.seed(seed);
         }
