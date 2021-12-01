@@ -361,6 +361,7 @@ public final class MyWorld {
         private Boolean keepSpawnInMemory;
         private Boolean pvp;
         private Integer viewDistance;
+        private Integer noTickViewDistance;
         //   Mob Spawning
         //     Allow
         private Boolean allowMonsters;
@@ -399,6 +400,9 @@ public final class MyWorld {
             }
             if (config.isSet("ViewDistance")) {
                 viewDistance = config.getInt("ViewDistance");
+            }
+            if (config.isSet("NoTickViewDistance")) {
+                noTickViewDistance = config.getInt("NoTickViewDistance");
             }
             ConfigurationSection section = config.getConfigurationSection("AllowSpawns");
             if (section != null) {
@@ -459,6 +463,7 @@ public final class MyWorld {
             config.set("KeepSpawnInMemory", keepSpawnInMemory);
             config.set("PvP", pvp);
             config.set("ViewDistance", viewDistance);
+            config.set("NoTickViewDistance", noTickViewDistance);
             config.set("AllowSpawns.Monster", allowMonsters);
             config.set("AllowSpawns.Animal", allowAnimals);
             // SpawnLimits
@@ -483,6 +488,7 @@ public final class MyWorld {
             keepSpawnInMemory = world.getKeepSpawnInMemory();
             pvp = world.getPVP();
             viewDistance = world.getViewDistance();
+            noTickViewDistance = world.getNoTickViewDistance();
             allowMonsters = world.getAllowMonsters();
             allowAnimals = world.getAllowAnimals();
             // SpawnLimits
@@ -507,6 +513,7 @@ public final class MyWorld {
             if (keepSpawnInMemory != null) world.setKeepSpawnInMemory(keepSpawnInMemory);
             if (pvp != null) world.setPVP(pvp);
             if (viewDistance != null) world.setViewDistance(viewDistance);
+            if (noTickViewDistance != null) world.setNoTickViewDistance(noTickViewDistance);
             if (allowMonsters != null && allowAnimals != null) {
                 world.setSpawnFlags(allowMonsters, allowAnimals);
             }
