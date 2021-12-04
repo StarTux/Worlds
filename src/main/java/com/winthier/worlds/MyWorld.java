@@ -354,7 +354,7 @@ public final class MyWorld {
         spawnLocation.setSpawn(location.getWorld());
     }
 
-    public static final class Settings {
+    public final class Settings {
         //   General
         private Boolean autoSave;
         private Difficulty difficulty;
@@ -487,8 +487,16 @@ public final class MyWorld {
             difficulty = world.getDifficulty();
             keepSpawnInMemory = world.getKeepSpawnInMemory();
             pvp = world.getPVP();
-            viewDistance = world.getViewDistance();
-            noTickViewDistance = world.getNoTickViewDistance();
+            try {
+                viewDistance = world.getViewDistance();
+            } catch (UnsupportedOperationException nsope) {
+                plugin.getLogger().warning(nsope.getMessage());
+            }
+            try {
+                noTickViewDistance = world.getNoTickViewDistance();
+            } catch (UnsupportedOperationException nsope) {
+                plugin.getLogger().warning(nsope.getMessage());
+            }
             allowMonsters = world.getAllowMonsters();
             allowAnimals = world.getAllowAnimals();
             // SpawnLimits
@@ -512,8 +520,16 @@ public final class MyWorld {
             if (difficulty != null) world.setDifficulty(difficulty);
             if (keepSpawnInMemory != null) world.setKeepSpawnInMemory(keepSpawnInMemory);
             if (pvp != null) world.setPVP(pvp);
-            if (viewDistance != null) world.setViewDistance(viewDistance);
-            if (noTickViewDistance != null) world.setNoTickViewDistance(noTickViewDistance);
+            try {
+                if (viewDistance != null) world.setViewDistance(viewDistance);
+            } catch (UnsupportedOperationException nsope) {
+                plugin.getLogger().warning(nsope.getMessage());
+            }
+            try {
+                if (noTickViewDistance != null) world.setNoTickViewDistance(noTickViewDistance);
+            } catch (UnsupportedOperationException nsope) {
+                plugin.getLogger().warning(nsope.getMessage());
+            }
             if (allowMonsters != null && allowAnimals != null) {
                 world.setSpawnFlags(allowMonsters, allowAnimals);
             }
