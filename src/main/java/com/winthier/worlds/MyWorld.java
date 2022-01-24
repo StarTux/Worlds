@@ -50,14 +50,8 @@ public final class MyWorld {
     private Portal netherPortal;
     private Portal endPortal;
     private Portal cryingPortal;
-    private RushNight rushNight = null;
     private GameMode gameMode = null;
-    private String copyTime;
     private Long fullTime;
-
-    enum RushNight {
-        NEVER, SLEEP, ALWAYS;
-    }
 
     public void configure(ConfigurationSection config) {
         autoLoad = config.getBoolean("AutoLoad", false);
@@ -129,17 +123,6 @@ public final class MyWorld {
                 cryingPortal.configure(portalSection);
             }
         }
-        final String rushNightString = config.getString("RushNight");
-        if (rushNightString == null) {
-            this.rushNight = null;
-        } else {
-            try {
-                this.rushNight = RushNight.valueOf(rushNightString.toUpperCase());
-            } catch (IllegalArgumentException iae) {
-                plugin.getLogger().warning("Unknown RushNight setting for " + name + ": " + rushNightString);
-                this.rushNight = null;
-            }
-        }
         final String gameModeString = config.getString("GameMode");
         if (gameModeString == null) {
             this.gameMode = null;
@@ -151,7 +134,6 @@ public final class MyWorld {
                 this.gameMode = null;
             }
         }
-        copyTime = config.getString("CopyTime");
         if (config.isLong("FullTime") || config.isInt("FullTime")) {
             fullTime = config.getLong("FullTime");
         }
@@ -212,9 +194,7 @@ public final class MyWorld {
             if (section == null) section = config.createSection("Portal.Crying");
             cryingPortal.save(section);
         }
-        if (rushNight != null) config.set("RushNight", rushNight.name());
         if (gameMode != null) config.set("GameMode", gameMode.name());
-        if (copyTime != null) config.set("CopyTime", copyTime);
         if (fullTime != null) config.set("FullTime", fullTime);
     }
 
