@@ -133,17 +133,13 @@ final class WorldsCommand implements CommandExecutor {
             Location loc = player.getLocation();
             MyWorld myWorld = plugin.worldByName(world.getName());
             if (myWorld == null) {
-                int x = loc.getBlockX();
-                int y = loc.getBlockY();
-                int z = loc.getBlockZ();
-                world.setSpawnLocation(x, y, z);
-                Msg.info(sender, "World spawn set to %d,%d,%d.", x, y, z);
+                world.setSpawnLocation(loc);
             } else {
                 myWorld.setSpawnLocation(loc);
                 myWorld.save();
                 plugin.saveConfig();
-                Msg.info(sender, "World spawn set to %.02f,%.02f,%.02f.", loc.getX(), loc.getY(), loc.getZ());
             }
+            Msg.info(sender, "World spawn set to %.02f,%.02f,%.02f.", loc.getX(), loc.getY(), loc.getZ());
         } else if (cmd.equals("unload") && args.length == 2) {
             String name = args[1];
             World world = plugin.getServer().getWorld(name);

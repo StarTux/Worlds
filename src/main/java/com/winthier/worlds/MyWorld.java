@@ -568,7 +568,7 @@ public final class MyWorld {
         }
 
         protected void setSpawn(World world) {
-            world.setSpawnLocation((int) x, (int) y, (int) z);
+            world.setSpawnLocation(getLocation(world));
         }
     }
 
