@@ -11,16 +11,11 @@ import org.bukkit.Difficulty;
 import org.bukkit.GameMode;
 import org.bukkit.GameRule;
 import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.PortalType;
 import org.bukkit.World;
 import org.bukkit.WorldBorder;
 import org.bukkit.WorldCreator;
 import org.bukkit.WorldType;
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.entity.Entity;
 import org.bukkit.util.NumberConversions;
 
 /**
@@ -47,9 +42,6 @@ public final class MyWorld {
     private Settings settings = null;
     private MyLocation spawnLocation = null;
     private Border border = null;
-    private Portal netherPortal;
-    private Portal endPortal;
-    private Portal cryingPortal;
     private GameMode gameMode = null;
     private Long fullTime;
 
@@ -103,25 +95,6 @@ public final class MyWorld {
         if (section != null) {
             border = new Border();
             border.configure(section);
-        }
-        section = config.getConfigurationSection("Portal");
-        if (section != null) {
-            ConfigurationSection portalSection;
-            portalSection = section.getConfigurationSection("Nether");
-            if (portalSection != null) {
-                netherPortal = new Portal(plugin, this, PortalType.NETHER);
-                netherPortal.configure(portalSection);
-            }
-            portalSection = section.getConfigurationSection("End");
-            if (portalSection != null) {
-                endPortal = new Portal(plugin, this, PortalType.ENDER);
-                endPortal.configure(portalSection);
-            }
-            portalSection = section.getConfigurationSection("Crying");
-            if (portalSection != null) {
-                cryingPortal = new Portal(plugin, this, PortalType.NETHER);
-                cryingPortal.configure(portalSection);
-            }
         }
         final String gameModeString = config.getString("GameMode");
         if (gameModeString == null) {
@@ -178,21 +151,6 @@ public final class MyWorld {
             ConfigurationSection section = config.getConfigurationSection("Border");
             if (section == null) section = config.createSection("Border");
             border.save(section);
-        }
-        if (netherPortal != null) {
-            ConfigurationSection section = config.getConfigurationSection("Portal.Nether");
-            if (section == null) section = config.createSection("Portal.Nether");
-            netherPortal.save(section);
-        }
-        if (endPortal != null) {
-            ConfigurationSection section = config.getConfigurationSection("Portal.End");
-            if (section == null) section = config.createSection("Portal.End");
-            endPortal.save(section);
-        }
-        if (cryingPortal != null) {
-            ConfigurationSection section = config.getConfigurationSection("Portal.Crying");
-            if (section == null) section = config.createSection("Portal.Crying");
-            cryingPortal.save(section);
         }
         if (gameMode != null) config.set("GameMode", gameMode.name());
         if (fullTime != null) config.set("FullTime", fullTime);
@@ -276,48 +234,6 @@ public final class MyWorld {
         if (spawnLocation != null) spawnLocation.setSpawn(world);
         if (border != null) border.apply(world);
         if (fullTime != null) world.setFullTime(fullTime);
-    }
-
-    /**
-     * Find the portal frame belonging to the entity location.  We
-     * assume the entity is in the portal frame block or right next to
-     * it; the rest is guesswork.
-     * @param the location of an entity that's traveling through a nether portal.
-     * @return the frame block right below, or null if none was found
-     */
-    private Block findFrame(Location from) {
-        Block block = from.getBlock();
-        if (block.getType() != Material.NETHER_PORTAL) {
-            for (BlockFace face : Arrays.asList(BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST)) {
-                Block rel = block.getRelative(face);
-                if (rel.getType() == Material.NETHER_PORTAL) {
-                    block = rel;
-                    break;
-                }
-            }
-        }
-        if (block.getType() != Material.NETHER_PORTAL) return null;
-        while (block.getType() == Material.NETHER_PORTAL) block = block.getRelative(BlockFace.DOWN);
-        return block;
-    }
-
-    /**
-     * Return true if event shall be cancelled because we take over,
-     * false wise.
-     */
-    public Portal applyPortalTravel(Entity entity, Location from, PortalType portalType) {
-        if (portalType == PortalType.NETHER) {
-            Block frame = findFrame(from);
-            if (frame != null && frame.getType() == Material.CRYING_OBSIDIAN) {
-                return cryingPortal;
-            } else {
-                return netherPortal;
-            }
-        } else if (portalType == PortalType.ENDER) {
-            return endPortal;
-        } else {
-            return null;
-        }
     }
 
     public Location getSpawnLocation() {

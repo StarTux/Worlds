@@ -22,7 +22,7 @@ public final class WorldsPlugin extends JavaPlugin {
             if (myWorld != null) myWorld.apply(world);
         }
         loadAllWorlds();
-        getServer().getPluginManager().registerEvents(new PortalListener(this), this);
+        getServer().getPluginManager().registerEvents(new PlayerListener(this), this);
     }
 
     @Override

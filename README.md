@@ -71,20 +71,4 @@ worlds:
       DamageBuffer: 0
       WarningDistance: 0
       WarningTime: 0
-    Portal:
-      Nether:
-        Destination: Example_nether
-        Ratio: 0.125 # 1/8
-        Cancel: false
-        CreatePortal: true
-        ToWorldSpawn: false
-        SearchRadius: 128
-        CreationRadius: 16
-      End:
-        Destination: Example_the_end
-        Cancel: false
-        CreatePortal: false
-        ToWorldSpawn: true
-        SearchRadius: 128
-        CreationRadius: 16
 ```
