@@ -257,7 +257,7 @@ public final class MyWorld {
         private Boolean keepSpawnInMemory;
         private Boolean pvp;
         private Integer viewDistance;
-        private Integer noTickViewDistance;
+        private Integer simulationDistance;
         //   Mob Spawning
         //     Allow
         private Boolean allowMonsters;
@@ -297,8 +297,8 @@ public final class MyWorld {
             if (config.isSet("ViewDistance")) {
                 viewDistance = config.getInt("ViewDistance");
             }
-            if (config.isSet("NoTickViewDistance")) {
-                noTickViewDistance = config.getInt("NoTickViewDistance");
+            if (config.isSet("SimulationDistance")) {
+                simulationDistance = config.getInt("SimulationDistance");
             }
             ConfigurationSection section = config.getConfigurationSection("AllowSpawns");
             if (section != null) {
@@ -359,7 +359,7 @@ public final class MyWorld {
             config.set("KeepSpawnInMemory", keepSpawnInMemory);
             config.set("PvP", pvp);
             config.set("ViewDistance", viewDistance);
-            config.set("NoTickViewDistance", noTickViewDistance);
+            config.set("SimulationDistance", simulationDistance);
             config.set("AllowSpawns.Monster", allowMonsters);
             config.set("AllowSpawns.Animal", allowAnimals);
             // SpawnLimits
@@ -383,16 +383,8 @@ public final class MyWorld {
             difficulty = world.getDifficulty();
             keepSpawnInMemory = world.getKeepSpawnInMemory();
             pvp = world.getPVP();
-            try {
-                viewDistance = world.getViewDistance();
-            } catch (UnsupportedOperationException nsope) {
-                plugin.getLogger().warning(nsope.getMessage());
-            }
-            try {
-                noTickViewDistance = world.getNoTickViewDistance();
-            } catch (UnsupportedOperationException nsope) {
-                plugin.getLogger().warning(nsope.getMessage());
-            }
+            viewDistance = world.getViewDistance();
+            simulationDistance = world.getSimulationDistance();
             allowMonsters = world.getAllowMonsters();
             allowAnimals = world.getAllowAnimals();
             // SpawnLimits
@@ -416,16 +408,8 @@ public final class MyWorld {
             if (difficulty != null) world.setDifficulty(difficulty);
             if (keepSpawnInMemory != null) world.setKeepSpawnInMemory(keepSpawnInMemory);
             if (pvp != null) world.setPVP(pvp);
-            try {
-                if (viewDistance != null) world.setViewDistance(viewDistance);
-            } catch (UnsupportedOperationException nsope) {
-                plugin.getLogger().warning(nsope.getMessage());
-            }
-            try {
-                if (noTickViewDistance != null) world.setNoTickViewDistance(noTickViewDistance);
-            } catch (UnsupportedOperationException nsope) {
-                plugin.getLogger().warning(nsope.getMessage());
-            }
+            if (viewDistance != null) world.setViewDistance(viewDistance);
+            if (simulationDistance != null) world.setSimulationDistance(simulationDistance);
             if (allowMonsters != null && allowAnimals != null) {
                 world.setSpawnFlags(allowMonsters, allowAnimals);
             }
