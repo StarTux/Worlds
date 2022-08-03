@@ -8,6 +8,7 @@ import java.util.Map;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
+import net.kyori.adventure.util.TriState;
 import org.bukkit.Difficulty;
 import org.bukkit.GameMode;
 import org.bukkit.GameRule;
@@ -187,6 +188,9 @@ public final class MyWorld {
         creator.biomeProvider(biomeProvider);
         if (seed != null) {
             creator.seed(seed);
+        }
+        if (settings != null) {
+            creator.keepSpawnLoaded(TriState.byBoolean(settings.keepSpawnInMemory));
         }
         return creator;
     }
