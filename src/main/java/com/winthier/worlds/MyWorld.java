@@ -1,6 +1,7 @@
 package com.winthier.worlds;
 
 import java.util.Arrays;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,6 +17,7 @@ import org.bukkit.WorldBorder;
 import org.bukkit.WorldCreator;
 import org.bukkit.WorldType;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.SpawnCategory;
 import org.bukkit.util.NumberConversions;
 
 /**
@@ -262,20 +264,8 @@ public final class MyWorld {
         //     Allow
         private Boolean allowMonsters;
         private Boolean allowAnimals;
-        //    Spawn Limits
-        private Integer ambientSpawnLimit;
-        private Integer animalSpawnLimit;
-        private Integer monsterSpawnLimit;
-        private Integer waterAmbientSpawnLimit;
-        private Integer waterAnimalSpawnLimit;
-        private Integer waterUndergroundCreatureSpawnLimit;
-        //     Ticks Per
-        private Long ticksPerAmbientSpawns;
-        private Long ticksPerAnimalSpawns;
-        private Long ticksPerMonsterSpawns;
-        private Long ticksPerWaterAmbientSpawns;
-        private Long ticksPerWaterSpawns;
-        private Long ticksPerWaterUndergroundCreatureSpawns;
+        private final Map<SpawnCategory, Integer> spawnLimits = new EnumMap<>(SpawnCategory.class);
+        private final Map<SpawnCategory, Integer> ticksPerSpawns = new EnumMap<>(SpawnCategory.class);
 
         protected void configure(ConfigurationSection config) {
             if (config.isSet("AutoSave")) {
@@ -311,44 +301,18 @@ public final class MyWorld {
             }
             section = config.getConfigurationSection("SpawnLimits");
             if (section != null) {
-                if (section.isSet("Ambient")) {
-                    ambientSpawnLimit = section.getInt("Ambient");
-                }
-                if (section.isSet("Animal")) {
-                    animalSpawnLimit = section.getInt("Animal");
-                }
-                if (section.isSet("Monster")) {
-                    monsterSpawnLimit = section.getInt("Monster");
-                }
-                if (section.isSet("WaterAmbient")) {
-                    waterAmbientSpawnLimit = section.getInt("WaterAmbient");
-                }
-                if (section.isSet("WaterAnimal")) {
-                    waterAnimalSpawnLimit = section.getInt("WaterAnimal");
-                }
-                if (section.isSet("WaterUndergroundCreature")) {
-                    waterUndergroundCreatureSpawnLimit = section.getInt("WaterUndergroundCreature");
+                for (SpawnCategory spawnCategory : SpawnCategory.values()) {
+                    if (section.isSet(spawnCategory.name())) {
+                        spawnLimits.put(spawnCategory, section.getInt(spawnCategory.name()));
+                    }
                 }
             }
-            section = config.getConfigurationSection("TicksPer");
+            section = config.getConfigurationSection("TicksPerSpawns");
             if (section != null) {
-                if (section.isSet("AmbientSpawn")) {
-                    ticksPerAmbientSpawns = section.getLong("AmbientSpawn");
-                }
-                if (section.isSet("AnimalSpawn")) {
-                    ticksPerAnimalSpawns = section.getLong("AnimalSpawn");
-                }
-                if (section.isSet("MonsterSpawn")) {
-                    ticksPerMonsterSpawns = section.getLong("MonsterSpawn");
-                }
-                if (section.isSet("WaterAmbient")) {
-                    ticksPerWaterAmbientSpawns = section.getLong("WaterAmbient");
-                }
-                if (section.isSet("WaterSpawn")) {
-                    ticksPerWaterSpawns = section.getLong("WaterSpawn");
-                }
-                if (section.isSet("WaterUndergroundCreature")) {
-                    ticksPerWaterUndergroundCreatureSpawns = section.getLong("WaterUndergroundCreature");
+                for (SpawnCategory spawnCategory : SpawnCategory.values()) {
+                    if (section.isSet(spawnCategory.name())) {
+                        ticksPerSpawns.put(spawnCategory, section.getInt(spawnCategory.name()));
+                    }
                 }
             }
         }
@@ -362,20 +326,10 @@ public final class MyWorld {
             config.set("SimulationDistance", simulationDistance);
             config.set("AllowSpawns.Monster", allowMonsters);
             config.set("AllowSpawns.Animal", allowAnimals);
-            // SpawnLimits
-            config.set("SpawnLimits.Ambient", ambientSpawnLimit);
-            config.set("SpawnLimits.Animal", animalSpawnLimit);
-            config.set("SpawnLimits.Monster", monsterSpawnLimit);
-            config.set("SpawnLimits.WaterAmbient", waterAmbientSpawnLimit);
-            config.set("SpawnLimits.WaterAnimal", waterAnimalSpawnLimit);
-            config.set("SpawnLimits.WaterUndergroundCreature", waterUndergroundCreatureSpawnLimit);
-            // TicksPer
-            config.set("TicksPer.AmbientSpawn", ticksPerAmbientSpawns);
-            config.set("TicksPer.AnimalSpawn", ticksPerAnimalSpawns);
-            config.set("TicksPer.MonsterSpawn", ticksPerMonsterSpawns);
-            config.set("TicksPer.WaterAmbientSpawn", ticksPerWaterAmbientSpawns);
-            config.set("TicksPer.WaterSpawn", ticksPerWaterSpawns);
-            config.set("TicksPer.WaterUndergroundSpawn", ticksPerWaterUndergroundCreatureSpawns);
+            for (SpawnCategory spawnCategory : SpawnCategory.values()) {
+                config.set("SpawnLimits." + spawnCategory.name(), spawnLimits.get(spawnCategory));
+                config.set("TicksPerSpawns." + spawnCategory.name(), ticksPerSpawns.get(spawnCategory));
+            }
         }
 
         protected void configure(World world) {
@@ -387,20 +341,10 @@ public final class MyWorld {
             simulationDistance = world.getSimulationDistance();
             allowMonsters = world.getAllowMonsters();
             allowAnimals = world.getAllowAnimals();
-            // SpawnLimits
-            ambientSpawnLimit = world.getAmbientSpawnLimit();
-            animalSpawnLimit = world.getAnimalSpawnLimit();
-            monsterSpawnLimit = world.getMonsterSpawnLimit();
-            waterAmbientSpawnLimit = world.getWaterAmbientSpawnLimit();
-            waterAnimalSpawnLimit = world.getWaterAnimalSpawnLimit();
-            waterUndergroundCreatureSpawnLimit = world.getWaterUndergroundCreatureSpawnLimit();
-            // TicksPer
-            ticksPerAmbientSpawns = world.getTicksPerAmbientSpawns();
-            ticksPerAnimalSpawns = world.getTicksPerAnimalSpawns();
-            ticksPerMonsterSpawns = world.getTicksPerMonsterSpawns();
-            ticksPerWaterAmbientSpawns = world.getTicksPerWaterAmbientSpawns();
-            ticksPerWaterSpawns = world.getTicksPerWaterSpawns();
-            ticksPerWaterUndergroundCreatureSpawns = world.getTicksPerWaterUndergroundCreatureSpawns();
+            for (SpawnCategory spawnCategory : SpawnCategory.values()) {
+                spawnLimits.put(spawnCategory, world.getSpawnLimit(spawnCategory));
+                ticksPerSpawns.put(spawnCategory, (int) world.getTicksPerSpawns(spawnCategory));
+            }
         }
 
         protected void apply(World world) {
@@ -413,23 +357,13 @@ public final class MyWorld {
             if (allowMonsters != null && allowAnimals != null) {
                 world.setSpawnFlags(allowMonsters, allowAnimals);
             }
-            // SpawnLimits
-            if (ambientSpawnLimit != null) world.setAmbientSpawnLimit(ambientSpawnLimit);
-            if (animalSpawnLimit != null) world.setAnimalSpawnLimit(animalSpawnLimit);
-            if (monsterSpawnLimit != null) world.setMonsterSpawnLimit(monsterSpawnLimit);
-            if (waterAmbientSpawnLimit != null) world.setWaterAmbientSpawnLimit(waterAmbientSpawnLimit);
-            if (waterAnimalSpawnLimit != null) world.setWaterAnimalSpawnLimit(waterAnimalSpawnLimit);
-            if (waterUndergroundCreatureSpawnLimit != null) {
-                world.setWaterUndergroundCreatureSpawnLimit(waterUndergroundCreatureSpawnLimit);
-            }
-            // TicksPer
-            if (ticksPerAmbientSpawns != null) world.setTicksPerAmbientSpawns(ticksPerAmbientSpawns.intValue());
-            if (ticksPerAnimalSpawns != null) world.setTicksPerAnimalSpawns(ticksPerAnimalSpawns.intValue());
-            if (ticksPerMonsterSpawns != null) world.setTicksPerMonsterSpawns(ticksPerMonsterSpawns.intValue());
-            if (ticksPerWaterAmbientSpawns != null) world.setTicksPerWaterAmbientSpawns(ticksPerWaterAmbientSpawns.intValue());
-            if (ticksPerWaterSpawns != null) world.setTicksPerWaterSpawns(ticksPerWaterSpawns.intValue());
-            if (ticksPerWaterUndergroundCreatureSpawns != null) {
-                world.setTicksPerWaterUndergroundCreatureSpawns(ticksPerWaterUndergroundCreatureSpawns.intValue());
+            for (SpawnCategory spawnCategory : SpawnCategory.values()) {
+                if (spawnLimits.containsKey(spawnCategory)) {
+                    world.setSpawnLimit(spawnCategory, spawnLimits.get(spawnCategory));
+                }
+                if (ticksPerSpawns.containsKey(spawnCategory)) {
+                    world.setTicksPerSpawns(spawnCategory, ticksPerSpawns.get(spawnCategory));
+                }
             }
         }
     }
