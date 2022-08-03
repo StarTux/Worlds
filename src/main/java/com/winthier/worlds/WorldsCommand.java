@@ -40,22 +40,28 @@ final class WorldsCommand implements CommandExecutor {
                 sender.sendMessage(ChatColor.RED + "World already loaded: " + name + "!");
                 return true;
             }
-            WorldCreator creator = WorldCreator.name(name);
-            World.Environment env;
-            if (args.length >= 3) {
-                String arg = args[2];
-                try {
-                    env = World.Environment.valueOf(arg.toUpperCase());
-                } catch (IllegalArgumentException iae) {
-                    sender.sendMessage(ChatColor.RED + "Invalid environment: " + arg);
-                    return true;
-                }
+            MyWorld myWorld = plugin.worldByName(name);
+            if (myWorld != null) {
+                World world = myWorld.loadWorld();
+                sender.sendMessage("World loaded: " + world.getName());
             } else {
-                env = World.Environment.NORMAL;
+                WorldCreator creator = WorldCreator.name(name);
+                World.Environment env;
+                if (args.length >= 3) {
+                    String arg = args[2];
+                    try {
+                        env = World.Environment.valueOf(arg.toUpperCase());
+                    } catch (IllegalArgumentException iae) {
+                        sender.sendMessage(ChatColor.RED + "Invalid environment: " + arg);
+                        return true;
+                    }
+                } else {
+                    env = World.Environment.NORMAL;
+                }
+                creator.environment(env);
+                World world = creator.createWorld();
+                sender.sendMessage("Unconfigured world loaded: " + world.getName());
             }
-            creator.environment(env);
-            World world = creator.createWorld();
-            sender.sendMessage("World loaded: " + world.getName());
         } else if (cmd.equals("listloaded")) {
             int count = 0;
             for (World world: plugin.getServer().getWorlds()) {

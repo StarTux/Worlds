@@ -47,8 +47,10 @@ public final class WorldsPlugin extends JavaPlugin {
 
     void loadAllWorlds() {
         for (MyWorld myWorld : getWorlds()) {
-            World world = myWorld.loadWorld();
-            if (world != null) getLogger().info("Loaded world " + world.getName());
+            if (myWorld.isAutoLoad()) {
+                World world = myWorld.loadWorld();
+                if (world != null) getLogger().info("Loaded world " + world.getName());
+            }
         }
     }
 

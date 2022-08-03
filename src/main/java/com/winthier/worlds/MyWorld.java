@@ -201,7 +201,7 @@ public final class MyWorld {
 
     public World loadWorld() {
         World world = getWorld();
-        if (world == null && autoLoad) {
+        if (world == null) {
             WorldCreator creator = getWorldCreator();
             world = creator.createWorld();
             if (world != null) apply(world);
