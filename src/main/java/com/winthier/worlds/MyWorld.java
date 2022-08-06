@@ -346,6 +346,7 @@ public final class MyWorld {
             allowMonsters = world.getAllowMonsters();
             allowAnimals = world.getAllowAnimals();
             for (SpawnCategory spawnCategory : SpawnCategory.values()) {
+                if (spawnCategory == SpawnCategory.MISC) continue;
                 spawnLimits.put(spawnCategory, world.getSpawnLimit(spawnCategory));
                 ticksPerSpawns.put(spawnCategory, (int) world.getTicksPerSpawns(spawnCategory));
             }
@@ -362,6 +363,7 @@ public final class MyWorld {
                 world.setSpawnFlags(allowMonsters, allowAnimals);
             }
             for (SpawnCategory spawnCategory : SpawnCategory.values()) {
+                if (spawnCategory == SpawnCategory.MISC) continue;
                 if (spawnLimits.containsKey(spawnCategory)) {
                     world.setSpawnLimit(spawnCategory, spawnLimits.get(spawnCategory));
                 }
