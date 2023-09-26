@@ -87,7 +87,7 @@ final class WorldsCommand extends AbstractCommand<WorldsPlugin> {
             if (players.isEmpty()) continue;
             List<Component> msgs = new ArrayList<>();
             msgs.add(textOfChildren(text(world.getName() + " ", GRAY),
-                                    text("&8(", DARK_GRAY),
+                                    text("(", DARK_GRAY),
                                     text(players.size(), WHITE),
                                     text(")", DARK_GRAY)));
             for (Player p: players) {
