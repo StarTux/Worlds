@@ -5,7 +5,7 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import lombok.Getter;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import net.kyori.adventure.util.TriState;
@@ -27,8 +27,7 @@ import org.bukkit.util.NumberConversions;
  * the world.
  * Always call configure() before loadWorld()!
  */
-@RequiredArgsConstructor
-@Getter
+@RequiredArgsConstructor @Data
 public final class MyWorld {
     private final WorldsPlugin plugin;
     // World Creator Settings
@@ -256,6 +255,7 @@ public final class MyWorld {
         spawnLocation.setSpawn(location.getWorld());
     }
 
+    @Data
     public final class Settings {
         //   General
         private Boolean autoSave;
@@ -412,6 +412,7 @@ public final class MyWorld {
         }
     }
 
+    @Data
     public static final class Border {
         private double centerX;
         private double centerZ;

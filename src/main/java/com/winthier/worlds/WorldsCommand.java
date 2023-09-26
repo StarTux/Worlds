@@ -40,8 +40,10 @@ final class WorldsCommand extends AbstractCommand<WorldsPlugin> {
         rootNode.addChild("listloaded").denyTabCompletion()
             .description("List loaded Bukkit worlds")
             .senderCaller(this::listLoaded);
-        rootNode.addChild("import").arguments("<world>")
+        rootNode.addChild("import").arguments("<world> [generator]")
             .description("Import Bukkit world settings")
+            .completers(CommandArgCompleter.supplyList(this::listLoadedWorlds),
+                        CommandArgCompleter.list(List.of("VoidGenerator")))
             .senderCaller(this::importCommand);
         rootNode.addChild("spawn").denyTabCompletion()
             .description("Teleport to spawn")
@@ -49,10 +51,11 @@ final class WorldsCommand extends AbstractCommand<WorldsPlugin> {
         rootNode.addChild("setspawn").denyTabCompletion()
             .description("Set world spawn")
             .playerCaller(this::setSpawn);
-        rootNode.addChild("load").arguments("<world> [environment]")
+        rootNode.addChild("load").arguments("<world> [environment] [generator]")
             .description("Load world")
             .completers(CommandArgCompleter.supplyList(this::listWorldFolders),
-                        CommandArgCompleter.enumLowerList(World.Environment.class))
+                        CommandArgCompleter.enumLowerList(World.Environment.class),
+                        CommandArgCompleter.list(List.of("VoidGenerator")))
             .senderCaller(this::load);
         rootNode.addChild("unload").arguments("<world>")
             .description("Unload Bukkit world")
@@ -94,7 +97,7 @@ final class WorldsCommand extends AbstractCommand<WorldsPlugin> {
     }
 
     private boolean load(CommandSender sender, String[] args) {
-        if (args.length < 1 || args.length > 2) return false;
+        if (args.length < 1 || args.length > 3) return false;
         String name = args[0];
         if (plugin.getServer().getWorld(name) != null) {
             throw new CommandWarn("World already loaded: " + name);
@@ -109,6 +112,10 @@ final class WorldsCommand extends AbstractCommand<WorldsPlugin> {
                 ? CommandArgCompleter.requireEnum(World.Environment.class, args[1])
                 : World.Environment.NORMAL;
             creator.environment(env);
+            final String generator = args.length >= 3
+                ? args[2]
+                : null;
+            if (generator != null) creator.generator(generator);
             World world = creator.createWorld();
             sender.sendMessage(text("Unconfigured world loaded: " + world.getName(), YELLOW));
         }
@@ -150,7 +157,7 @@ final class WorldsCommand extends AbstractCommand<WorldsPlugin> {
     }
 
     private boolean importCommand(CommandSender sender, String[] args) {
-        if (args.length != 1) return false;
+        if (args.length < 1 || args.length > 2) return false;
         String name = args[0];
         if (name.equals("*")) {
             int count = 0;
@@ -164,6 +171,9 @@ final class WorldsCommand extends AbstractCommand<WorldsPlugin> {
             plugin.saveConfig();
             sender.sendMessage(text("Imported " + count + " worlds", YELLOW));
         } else {
+            final String generator = args.length >= 2
+                ? args[1]
+                : null;
             World world = plugin.getServer().getWorld(name);
             if (world == null) {
                 throw new CommandWarn("World not found: " + name);
@@ -172,6 +182,7 @@ final class WorldsCommand extends AbstractCommand<WorldsPlugin> {
             MyWorld myWorld = plugin.worldOf(world);
             if (myWorld == null) myWorld = new MyWorld(plugin, name);
             myWorld.configure(world);
+            if (generator != null) myWorld.setGenerator(generator);
             myWorld.save();
             plugin.saveConfig();
             sender.sendMessage(text("Imported world " + name, YELLOW));
