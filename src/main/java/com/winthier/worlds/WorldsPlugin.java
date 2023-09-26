@@ -13,8 +13,8 @@ public final class WorldsPlugin extends JavaPlugin {
     public void onEnable() {
         saveDefaultConfig();
         reloadConfig();
-        getCommand("worlds").setExecutor(new WorldsCommand(this));
-        getCommand("wtp").setExecutor(new WTPCommand(this));
+        new WorldsCommand(this).enable();
+        new WTPCommand(this).enable();
         // Apply settings to default worlds (and other previously
         // loaded ones)
         for (World world: getServer().getWorlds()) {
