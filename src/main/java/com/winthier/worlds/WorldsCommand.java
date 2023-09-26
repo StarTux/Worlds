@@ -30,7 +30,8 @@ final class WorldsCommand extends AbstractCommand<WorldsPlugin> {
             .description("List worlds")
             .senderCaller(this::list);
         rootNode.addChild("who").denyTabCompletion()
-            .description("List players in worlds");
+            .description("List players in worlds")
+            .senderCaller(this::who);
         rootNode.addChild("reload").denyTabCompletion()
             .description("Reload config")
             .senderCaller(this::reload);
