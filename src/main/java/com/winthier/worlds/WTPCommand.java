@@ -1,39 +1,45 @@
 package com.winthier.worlds;
 
-import java.util.Collections;
+import com.cavetale.core.command.AbstractCommand;
+import com.cavetale.core.command.CommandArgCompleter;
+import com.cavetale.core.command.CommandWarn;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
-import lombok.RequiredArgsConstructor;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
+import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.format.NamedTextColor.*;
 
-@RequiredArgsConstructor
-final class WTPCommand implements TabExecutor {
-    final WorldsPlugin plugin;
+public final class WTPCommand extends AbstractCommand<WorldsPlugin> {
+    protected WTPCommand(final WorldsPlugin plugin) {
+        super(plugin, "wtp");
+    }
 
-    @Override
-    public boolean onCommand(CommandSender sender, Command command, String alias, String[] args) {
+    protected void onEnable() {
+        rootNode.arguments("[player] <world>")
+            .description("Teleport to world")
+            .completers(CommandArgCompleter.supplyList(this::listLoadedWorlds),
+                        CommandArgCompleter.supplyList(this::listLoadedWorlds))
+            .senderCaller(this::wtp);
+    }
+
+    private boolean wtp(CommandSender sender, String[] args) {
         final Player player = sender instanceof Player ? (Player) sender : null;
         Player target;
         String name;
         if (args.length == 1) {
             target = player;
             if (target == null) {
-                sender.sendMessage("Player expected.");
-                return true;
+                throw new CommandWarn("Player expected");
             }
             name = args[0];
         } else if (args.length == 2) {
             target = plugin.getServer().getPlayerExact(args[0]);
             if (target == null) {
-                sender.sendMessage("Player not found: " + args[0]);
-                return true;
+                throw new CommandWarn("Player not found: " + args[0]);
             }
             name = args[1];
         } else {
@@ -48,21 +54,18 @@ final class WTPCommand implements TabExecutor {
             if (world != null) loc = world.getSpawnLocation();
         }
         if (loc == null) {
-            sender.sendMessage(ChatColor.RED + "World not found: " + name);
-            return true;
+            throw new CommandWarn("World not found: " + name);
         }
         target.teleport(loc);
-        sender.sendMessage(ChatColor.YELLOW + "Teleported " + target.getName()
-                           + " to spawn location of world " + name);
+        sender.sendMessage(text("Teleported " + target.getName() + " to spawn location of world " + name, YELLOW));
         return true;
     }
 
-    @Override
-    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
-        if (args.length != 1) return Collections.emptyList();
-        return Bukkit.getWorlds().stream()
-            .map(World::getName)
-            .filter(s -> s.contains(args[0]))
-            .collect(Collectors.toList());
+    private List<String> listLoadedWorlds() {
+        List<String> result = new ArrayList<>();
+        for (World world : Bukkit.getWorlds()) {
+            result.add(world.getName());
+        }
+        return result;
     }
 }
