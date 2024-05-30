@@ -339,7 +339,6 @@ public final class MyWorld {
         protected void configure(World world) {
             autoSave = world.isAutoSave();
             difficulty = world.getDifficulty();
-            keepSpawnInMemory = world.getKeepSpawnInMemory();
             pvp = world.getPVP();
             viewDistance = world.getViewDistance();
             simulationDistance = world.getSimulationDistance();
@@ -355,7 +354,6 @@ public final class MyWorld {
         protected void apply(World world) {
             if (autoSave != null) world.setAutoSave(autoSave);
             if (difficulty != null) world.setDifficulty(difficulty);
-            if (keepSpawnInMemory != null) world.setKeepSpawnInMemory(keepSpawnInMemory);
             if (pvp != null) world.setPVP(pvp);
             if (viewDistance != null) world.setViewDistance(viewDistance);
             if (simulationDistance != null) world.setSimulationDistance(simulationDistance);
