@@ -5,6 +5,7 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
@@ -165,7 +166,13 @@ public final class MyWorld {
         seed = world.getSeed();
         if (gameRules == null) gameRules = new HashMap<>();
         for (GameRule<?> gameRule : GameRule.values()) {
-            Object value = world.getGameRuleValue(gameRule);
+            final Object value;
+            try {
+                value = world.getGameRuleValue(gameRule);
+            } catch (IllegalArgumentException iae) {
+                plugin.getLogger().log(Level.SEVERE, "gameRule=" + gameRule, iae);
+                continue;
+            }
             gameRules.put(gameRule, value);
         }
         settings = new Settings();
