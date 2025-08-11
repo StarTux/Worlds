@@ -2,7 +2,7 @@ main: com.winthier.worlds.WorldsPlugin
 name: Worlds
 
 version: 0.1
-api-version: '1.21'
+api-version: '1.21.8'
 
 description: Simple world loading plugin
 author: StarTux
