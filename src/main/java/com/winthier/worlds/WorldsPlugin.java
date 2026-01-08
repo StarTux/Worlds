@@ -30,12 +30,21 @@ public final class WorldsPlugin extends JavaPlugin {
 
     List<MyWorld> getWorlds() {
         if (worlds == null) {
+            boolean shouldSave = false;
             worlds = new ArrayList<>();
             ConfigurationSection config = getConfig().getConfigurationSection("worlds");
             for (String key: config.getKeys(false)) {
                 MyWorld myWorld = new MyWorld(this, key);
                 myWorld.configure(config.getConfigurationSection(key));
+                if (myWorld.isDidConvert()) {
+                    myWorld.save();
+                    shouldSave = true;
+                }
                 worlds.add(myWorld);
+            }
+            if (shouldSave) {
+                getLogger().info("Saving due to conversion");
+                saveConfig();
             }
         }
         return worlds;

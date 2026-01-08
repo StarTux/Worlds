@@ -13,6 +13,7 @@ import net.kyori.adventure.util.TriState;
 import org.bukkit.Difficulty;
 import org.bukkit.GameMode;
 import org.bukkit.GameRule;
+import org.bukkit.GameRules;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.WorldBorder;
@@ -47,6 +48,7 @@ public final class MyWorld {
     private Border border = null;
     private GameMode gameMode = null;
     private Long fullTime;
+    private boolean didConvert;
 
     public void configure(ConfigurationSection config) {
         autoLoad = config.getBoolean("AutoLoad", false);
@@ -76,13 +78,54 @@ public final class MyWorld {
         ConfigurationSection section = config.getConfigurationSection("GameRules");
         if (section != null) {
             if (gameRules == null) gameRules = new HashMap<>();
-            for (String key: section.getKeys(false)) {
+            for (String key : section.getKeys(false)) {
+                String value = section.getString(key);
                 GameRule gameRule = GameRule.getByName(key);
-                if (gameRule == null) {
-                    plugin.getLogger().warning(name + ": Unknown GameRule: " + key);
+                if (gameRule != null) {
+                    gameRules.put(gameRule, value);
                     continue;
                 }
-                gameRules.put(gameRule, section.getString(key));
+                // Legacy conversion
+                if (key.equals("doFireTick") && value.equals("false")) {
+                    gameRule = GameRules.FIRE_SPREAD_RADIUS_AROUND_PLAYER;
+                    value = "0";
+                    plugin.getLogger().info("[" + name + "] GameRule updated: " + gameRule + " = " + value);
+                    didConvert = true;
+                    gameRules.put(gameRule, value);
+                    continue;
+                }
+                if (Util.GAME_RULES_REMOVED.contains(key)) {
+                    plugin.getLogger().info("[" + name + "] GameRule removed: " + key + " = " + value);
+                    didConvert = true;
+                    continue;
+                }
+                String key2 = Util.camelToLowerCase(key).toLowerCase();
+                gameRule = GameRule.getByName(key2);
+                if (gameRule != null) {
+                    plugin.getLogger().info("[" + name + "] GameRule cameled: " + key + " => " + key2 + " = " + value);
+                    didConvert = true;
+                    gameRules.put(gameRule, value);
+                    continue;
+                }
+                gameRule = Util.GAME_RULE_CONVERSION.get(key);
+                if (gameRule != null) {
+                    if (Util.GAME_RULES_INVERTED.contains(gameRule)) {
+                        if ("true".equalsIgnoreCase(value)) {
+                            value = "false";
+                        } else if ("false".equalsIgnoreCase(value)) {
+                            value = "true";
+                        } else {
+                            plugin.getLogger().severe("[" + name + "] Invalid inverted GameRule value: " + gameRule + " = " + value);
+                        }
+                    }
+                    if (gameRule != null) {
+                        plugin.getLogger().info("[" + name + "] GameRule converted: " + key + " => " + gameRule + " = " + value);
+                        didConvert = true;
+                        gameRules.put(gameRule, value);
+                        continue;
+                    }
+                }
+                plugin.getLogger().severe("[" + name + "] Unknown GameRule: " + key);
             }
         }
         section = config.getConfigurationSection("Settings");
@@ -121,8 +164,7 @@ public final class MyWorld {
      * reload to apply the changes.
      */
     public void save() {
-        ConfigurationSection config = plugin.getConfig().getConfigurationSection("worlds").getConfigurationSection(name);
-        if (config == null) config = plugin.getConfig().getConfigurationSection("worlds").createSection(name);
+        ConfigurationSection config = plugin.getConfig().getConfigurationSection("worlds").createSection(name);
         config.set("AutoLoad", autoLoad);
         if (worldType != null) {
             config.set("Type", worldType.name());
@@ -137,7 +179,7 @@ public final class MyWorld {
             ConfigurationSection section = config.getConfigurationSection("GameRules");
             if (section == null) section = config.createSection("GameRules");
             for (Map.Entry<GameRule<?>, Object> entry : gameRules.entrySet()) {
-                section.set(entry.getKey().getName(), entry.getValue());
+                section.set(entry.getKey().getKey().getKey(), entry.getValue());
             }
         }
         if (settings != null) {
