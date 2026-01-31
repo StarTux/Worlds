@@ -372,7 +372,9 @@ public final class MyWorld {
 
         protected void save(ConfigurationSection config) {
             config.set("AutoSave", autoSave);
-            config.set("Difficulty", difficulty.name());
+            if (difficulty != null) {
+                config.set("Difficulty", difficulty.name());
+            }
             config.set("KeepSpawnInMemory", keepSpawnInMemory);
             config.set("PvP", pvp);
             config.set("ViewDistance", viewDistance);
