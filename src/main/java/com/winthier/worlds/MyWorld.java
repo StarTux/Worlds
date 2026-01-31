@@ -79,53 +79,26 @@ public final class MyWorld {
         if (section != null) {
             if (gameRules == null) gameRules = new HashMap<>();
             for (String key : section.getKeys(false)) {
-                String value = section.getString(key);
                 GameRule gameRule = GameRule.getByName(key);
-                if (gameRule != null) {
-                    gameRules.put(gameRule, value);
+                if (gameRule == null) {
+                    convertLegacyGameRule(key, section.getString(key));
                     continue;
                 }
-                // Legacy conversion
-                if (key.equals("doFireTick") && value.equals("false")) {
-                    gameRule = GameRules.FIRE_SPREAD_RADIUS_AROUND_PLAYER;
-                    value = "0";
-                    plugin.getLogger().info("[" + name + "] GameRule updated: " + gameRule + " = " + value);
-                    didConvert = true;
-                    gameRules.put(gameRule, value);
-                    continue;
-                }
-                if (Util.GAME_RULES_REMOVED.contains(key)) {
-                    plugin.getLogger().info("[" + name + "] GameRule removed: " + key + " = " + value);
-                    didConvert = true;
-                    continue;
-                }
-                String key2 = Util.camelToLowerCase(key).toLowerCase();
-                gameRule = GameRule.getByName(key2);
-                if (gameRule != null) {
-                    plugin.getLogger().info("[" + name + "] GameRule cameled: " + key + " => " + key2 + " = " + value);
-                    didConvert = true;
-                    gameRules.put(gameRule, value);
-                    continue;
-                }
-                gameRule = Util.GAME_RULE_CONVERSION.get(key);
-                if (gameRule != null) {
-                    if (Util.GAME_RULES_INVERTED.contains(gameRule)) {
-                        if ("true".equalsIgnoreCase(value)) {
-                            value = "false";
-                        } else if ("false".equalsIgnoreCase(value)) {
-                            value = "true";
-                        } else {
-                            plugin.getLogger().severe("[" + name + "] Invalid inverted GameRule value: " + gameRule + " = " + value);
-                        }
+                Class<?> type = gameRule.getType();
+                if (type == Integer.class) {
+                    int intValue = NumberConversions.toInt(section.get(key));
+                    if (gameRule == GameRules.MAX_ENTITY_CRAMMING && intValue < 0) {
+                        intValue = 0;
                     }
-                    if (gameRule != null) {
-                        plugin.getLogger().info("[" + name + "] GameRule converted: " + key + " => " + gameRule + " = " + value);
-                        didConvert = true;
-                        gameRules.put(gameRule, value);
-                        continue;
+                    gameRules.put(gameRule, intValue);
+                } else if (type == Boolean.class) {
+                    Boolean boolValue = toBoolean(section.get(key), null);
+                    if (boolValue == null) {
+                        plugin.getLogger().severe("[" + name + "] Invalid boolean gamerule: " + gameRule.getKey() + " = " + section.get(key));
+                    } else {
+                        gameRules.put(gameRule, boolValue);
                     }
                 }
-                plugin.getLogger().severe("[" + name + "] Unknown GameRule: " + key);
             }
         }
         section = config.getConfigurationSection("Settings");
@@ -156,6 +129,50 @@ public final class MyWorld {
         if (config.isLong("FullTime") || config.isInt("FullTime")) {
             fullTime = config.getLong("FullTime");
         }
+    }
+
+    private void convertLegacyGameRule(String key, String value) {
+        GameRule gameRule = null;
+        if (key.equals("doFireTick") && value.equals("false")) {
+            gameRule = GameRules.FIRE_SPREAD_RADIUS_AROUND_PLAYER;
+            value = "0";
+            plugin.getLogger().info("[" + name + "] GameRule updated: " + gameRule + " = " + value);
+            didConvert = true;
+            gameRules.put(gameRule, value);
+            return;
+        }
+        if (Util.GAME_RULES_REMOVED.contains(key)) {
+            plugin.getLogger().info("[" + name + "] GameRule removed: " + key + " = " + value);
+            didConvert = true;
+            return;
+        }
+        String key2 = Util.camelToLowerCase(key).toLowerCase();
+        gameRule = GameRule.getByName(key2);
+        if (gameRule != null) {
+            plugin.getLogger().info("[" + name + "] GameRule cameled: " + key + " => " + key2 + " = " + value);
+            didConvert = true;
+            gameRules.put(gameRule, value);
+            return;
+        }
+        gameRule = Util.GAME_RULE_CONVERSION.get(key);
+        if (gameRule != null) {
+            if (Util.GAME_RULES_INVERTED.contains(gameRule)) {
+                if ("true".equalsIgnoreCase(value)) {
+                    value = "false";
+                } else if ("false".equalsIgnoreCase(value)) {
+                    value = "true";
+                } else {
+                    plugin.getLogger().severe("[" + name + "] Invalid inverted GameRule value: " + gameRule + " = " + value);
+                }
+            }
+            if (gameRule != null) {
+                plugin.getLogger().info("[" + name + "] GameRule converted: " + key + " => " + gameRule + " = " + value);
+                didConvert = true;
+                gameRules.put(gameRule, value);
+                return;
+            }
+        }
+        plugin.getLogger().severe("[" + name + "] Unknown GameRule: " + key);
     }
 
     /**
@@ -212,7 +229,7 @@ public final class MyWorld {
             try {
                 value = world.getGameRuleValue(gameRule);
             } catch (IllegalArgumentException iae) {
-                plugin.getLogger().log(Level.SEVERE, "gameRule=" + gameRule, iae);
+                plugin.getLogger().log(Level.SEVERE, "[" + name + "] gameRule=" + gameRule, iae);
                 continue;
             }
             gameRules.put(gameRule, value);
@@ -257,9 +274,9 @@ public final class MyWorld {
         return world;
     }
 
-    private static boolean toBoolean(Object in, boolean dfl) {
-        if (in instanceof Boolean) {
-            return (Boolean) in;
+    private static Boolean toBoolean(Object in, Boolean dfl) {
+        if (in instanceof Boolean bool) {
+            return bool;
         }
         try {
             return Boolean.parseBoolean(in.toString());
@@ -275,12 +292,20 @@ public final class MyWorld {
                     @SuppressWarnings("unchecked")
                     GameRule<Integer> gameRule = (GameRule<Integer>) entry.getKey();
                     int value = NumberConversions.toInt(entry.getValue());
-                    world.setGameRule(gameRule, value);
+                    try {
+                        world.setGameRule(gameRule, value);
+                    } catch (IllegalArgumentException iae) {
+                        plugin.getLogger().log(Level.SEVERE, "[" + name + "] " + gameRule.getKey() + " = " + value, iae);
+                    }
                 } else if (type == Boolean.class) {
                     @SuppressWarnings("unchecked")
                     GameRule<Boolean> gameRule = (GameRule<Boolean>) entry.getKey();
-                    boolean value = toBoolean(entry.getValue(), world.getGameRuleDefault(gameRule));
-                    world.setGameRule(gameRule, value);
+                    Boolean value = toBoolean(entry.getValue(), world.getGameRuleDefault(gameRule));
+                    if (value == null) {
+                        plugin.getLogger().severe("[" + name + "] Invalid boolean gamerule: " + gameRule.getKey() + " = " + entry.getValue());
+                    } else {
+                        world.setGameRule(gameRule, value);
+                    }
                 }
             }
         }
